@@ -1,0 +1,24 @@
+import { ReportWizard } from '../components/features/ReportWizard';
+import { PenTool } from 'lucide-react';
+
+export default function Report() {
+    return (
+        <div className="max-w-4xl mx-auto w-full flex flex-col items-center">
+            <div className="text-center mb-10">
+                <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-bg-surface border border-border-default shadow-lg text-accent-primary mb-6">
+                    <PenTool className="w-8 h-8" />
+                </div>
+                <h1 className="text-4xl sm:text-5xl font-display text-text-primary mb-4">
+                    File Anonymous Complaint
+                </h1>
+                <p className="text-lg text-text-muted max-w-2xl mx-auto">
+                    Your identity will be protected cryptographically. Your organization's ICC will receive the compliant and evidence but will not know who you are unless you choose to reveal yourself.
+                </p>
+            </div>
+
+            <div className="w-full">
+                <ReportWizard />
+            </div>
+        </div>
+    );
+}
