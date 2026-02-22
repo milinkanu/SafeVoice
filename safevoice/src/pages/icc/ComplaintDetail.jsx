@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import axios from 'axios';
 import { useParams, Link } from 'react-router-dom';
 import {
     Building2, ArrowLeft, Calendar, FileText, CheckCircle2,
@@ -39,31 +40,91 @@ export default function ComplaintDetail() {
     const [caseData, setCaseData] = useState(() => {
         const storedCases = JSON.parse(localStorage.getItem('icc_cases')) || [];
         const foundCase = storedCases.find(c => c.id === id);
-        return foundCase || MOCK_DETAIL;
+        return { ...MOCK_DETAIL, ...foundCase, messages: [] };
     });
 
     const [isUpdating, setIsUpdating] = useState(false);
 
-    const handleAcknowledge = () => {
+    const fetchEvidenceAndCase = async () => {
+        try {
+            const evRes = await axios.get(`http://localhost:5000/api/evidence/${id}`);
+            let fetchedEvidence = caseData.evidence || [];
+            if (evRes.data.success && evRes.data.data.length > 0) {
+                fetchedEvidence = evRes.data.data.map(e => ({
+                    name: e.file_path.split('\\').pop().split('/').pop(),
+                    hash: e.file_hash,
+                    type: 'unknown'
+                }));
+            }
+
+            const compRes = await axios.get('http://localhost:5000/api/icc/complaints');
+            const c = compRes.data.data.find(comp => comp.case_id === id);
+
+            if (c) {
+                let parsedMessages = [];
+                if (c.icc_message) {
+                    try {
+                        const mParsed = typeof c.icc_message === 'string' ? JSON.parse(c.icc_message) : c.icc_message;
+                        if (Array.isArray(mParsed)) parsedMessages = mParsed;
+                        else if (typeof mParsed === 'string') parsedMessages = [{ sender: 'ICC', text: mParsed, date: c.created_at }];
+                    } catch (e) { parsedMessages = [{ sender: 'ICC', text: c.icc_message, date: c.created_at }]; }
+                }
+
+                let parsedHistory = [{ stage: 'filed', date: c.created_at }];
+                if (c.history) {
+                    try {
+                        const hParsed = typeof c.history === 'string' ? JSON.parse(c.history) : c.history;
+                        if (Array.isArray(hParsed)) parsedHistory = hParsed;
+                    } catch (e) { }
+                }
+
+                setCaseData(prev => ({
+                    ...prev,
+                    evidence: fetchedEvidence,
+                    status: c.status?.toLowerCase(),
+                    messages: parsedMessages,
+                    history: parsedHistory
+                }));
+            }
+        } catch (err) {
+            console.error("Failed to fetch updates", err);
+        }
+    };
+
+    useEffect(() => {
+        fetchEvidenceAndCase();
+        const interval = setInterval(fetchEvidenceAndCase, 5000);
+        return () => clearInterval(interval);
+    }, [id]);
+
+    const handleAcknowledge = async () => {
         if (confirm("Marking as acknowledged legally confirms receipt by the ICC. Proceed?")) {
             setIsUpdating(true);
-            setTimeout(() => {
+            try {
+                const safeHistory = Array.isArray(caseData.history) ? caseData.history : [];
+                const newHistory = [...safeHistory, { stage: 'acknowledged', date: new Date().toISOString() }];
+                await axios.patch(`http://localhost:5000/api/icc/complaints/${caseData.id}`, { status: 'active', history: newHistory });
+
                 setCaseData(prev => ({
                     ...prev,
                     status: 'active',
-                    history: [...prev.history, { stage: 'acknowledged', date: new Date().toISOString() }]
+                    history: newHistory
                 }));
-                // Update local storage so dashboard sees the change
+
+                // Update local storage so dashboard sees the change before refreshing
                 const currentCases = JSON.parse(localStorage.getItem('icc_cases')) || [];
                 const updatedCases = currentCases.map(c =>
-                    c.id === caseData.id ? { ...c, status: 'active' } : c
+                    c.id === caseData.id ? { ...c, status: 'active', history: newHistory } : c
                 );
-                // If the case isn't in MOCK_CASES, we just ignore for demo
                 if (updatedCases.length > 0) {
                     localStorage.setItem('icc_cases', JSON.stringify(updatedCases));
                 }
+            } catch (err) {
+                console.error("Failed to update status:", err);
+                alert("Could not update case status on the server.");
+            } finally {
                 setIsUpdating(false);
-            }, 800);
+            }
         }
     };
 
@@ -155,7 +216,7 @@ export default function ComplaintDetail() {
                                                 </p>
                                             </div>
                                         </div>
-                                        <Button variant="ghost" className="text-xs">Download File</Button>
+                                        <Button variant="ghost" className="text-xs" onClick={() => alert(`Starting download for ${file.name}...`)}>Download File</Button>
                                     </div>
                                 ))}
                             </div>
@@ -176,16 +237,16 @@ export default function ComplaintDetail() {
 
                             <div className="space-y-4">
                                 {/* Contextual Action */}
-                                {caseData.status === 'overdue_acknowledge' ? (
+                                {['pending', 'submitted', 'overdue_acknowledge'].includes((caseData.status || '').toLowerCase()) ? (
                                     <div className="bg-accent-danger/10 border border-accent-danger/20 p-4 rounded-xl">
-                                        <p className="text-sm font-semibold text-accent-danger mb-2">Day 7 Legal Notice Pending</p>
-                                        <p className="text-xs text-text-primary/80 mb-4 leading-relaxed">This case was filed over 7 days ago. You must formally acknowledge receipt immediately to remain compliant with POSH timelines.</p>
+                                        <p className="text-sm font-semibold text-accent-danger mb-2">Acknowledgment Required</p>
+                                        <p className="text-xs text-text-primary/80 mb-4 leading-relaxed">You must formally acknowledge receipt to remain compliant with POSH timelines.</p>
                                         <Button variant="danger" className="w-full text-sm font-semibold shadow-lg shadow-accent-danger/20" onClick={handleAcknowledge} disabled={isUpdating}>
                                             {isUpdating ? 'Recording...' : 'Mark as Acknowledged'}
                                         </Button>
                                     </div>
                                 ) : (
-                                    <Button variant="outline" className="w-full h-12 text-accent-primary border-accent-primary hover:bg-accent-primary/10">
+                                    <Button variant="outline" className="w-full h-12 text-accent-primary border-accent-primary hover:bg-accent-primary/10" onClick={() => alert("Formal inquiry process initialized.")}>
                                         Start Formal Inquiry (Day 30 limit)
                                     </Button>
                                 )}
@@ -193,13 +254,26 @@ export default function ComplaintDetail() {
                                 <div className="h-px w-full bg-border-default my-2"></div>
 
                                 {/* Standard Actions */}
-                                <Button variant="ghost" className="w-full justify-start hover:bg-bg-surface text-text-muted hover:text-text-primary">
+                                <Button variant="ghost" className="w-full justify-start hover:bg-bg-surface text-text-muted hover:text-text-primary" onClick={() => alert('Upload modal will open here.')}>
                                     <UploadCloud className="w-4 h-4 mr-3" /> Upload Final Resolution / Findings
                                 </Button>
-                                <Button variant="ghost" className="w-full justify-start hover:bg-bg-surface text-text-muted hover:text-text-primary">
+                                <Button variant="ghost" className="w-full justify-start hover:bg-bg-surface text-text-muted hover:text-text-primary" onClick={() => alert('Request sent to the complainant.')}>
                                     <FileQuestion className="w-4 h-4 mr-3" /> Request More Information
                                 </Button>
-                                <Button variant="ghost" className="w-full justify-start hover:bg-bg-surface text-text-muted hover:text-text-primary">
+                                <Button variant="ghost" className="w-full justify-start hover:bg-bg-surface text-text-muted hover:text-text-primary" onClick={async () => {
+                                    const msgText = prompt('Enter anonymous message for the victim:');
+                                    if (msgText) {
+                                        const newMsg = { sender: 'ICC', text: msgText, date: new Date().toISOString() };
+                                        const newMessages = [...(caseData.messages || []), newMsg];
+                                        try {
+                                            await axios.patch(`http://localhost:5000/api/icc/complaints/${caseData.id}`, { iccMessage: JSON.stringify(newMessages) });
+                                            setCaseData(prev => ({ ...prev, messages: newMessages }));
+                                            alert('Message sent to the victim securely.');
+                                        } catch (e) {
+                                            alert('Failed to send message. Is your backend running?');
+                                        }
+                                    }
+                                }}>
                                     <MessageSquare className="w-4 h-4 mr-3" /> Send Anonymous Message to Victim
                                 </Button>
                             </div>
@@ -215,6 +289,26 @@ export default function ComplaintDetail() {
                             <div className="flex justify-end mt-3">
                                 <Button variant="ghost" className="text-xs px-3 py-1 text-text-muted">Save Note</Button>
                             </div>
+                        </section>
+
+                        {/* Direct Messages */}
+                        <section className="bg-bg-secondary p-6 rounded-2xl border border-border-default shadow-sm max-h-[400px] overflow-y-auto flex flex-col mt-6">
+                            <h3 className="text-sm font-semibold uppercase tracking-wider text-text-muted mb-4">Direct Messages</h3>
+                            {caseData.messages && caseData.messages.length > 0 ? (
+                                <div className="space-y-4 flex-1">
+                                    {caseData.messages.map((msg, idx) => (
+                                        <div key={idx} className={`p-3 rounded-xl border ${msg.sender === 'ICC' ? 'bg-bg-surface border-border-default ml-8' : 'bg-bg-primary border-accent-primary/20 mr-8'}`}>
+                                            <p className="text-[10px] text-text-muted mb-1 font-semibold flex justify-between">
+                                                <span>{msg.sender}</span>
+                                                <span>{new Date(msg.date).toLocaleDateString()} {new Date(msg.date).toLocaleTimeString()}</span>
+                                            </p>
+                                            <p className="text-sm text-text-primary whitespace-pre-wrap">{msg.text}</p>
+                                        </div>
+                                    ))}
+                                </div>
+                            ) : (
+                                <p className="text-xs text-text-muted italic">No messages sent.</p>
+                            )}
                         </section>
 
                     </div>

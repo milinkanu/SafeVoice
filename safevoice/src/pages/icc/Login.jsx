@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
 import { Shield, Key, Mail, Building2, LogIn } from 'lucide-react';
 import { Button } from '../../components/ui/Button';
 import { Input } from '../../components/ui/Input';
@@ -14,14 +15,15 @@ export default function Login() {
         e.preventDefault();
         setIsLoading(true);
         try {
-            // Mock login request
-            await new Promise(r => setTimeout(r, 1000));
+            const response = await axios.post('http://localhost:5000/api/icc/login', { email, password });
 
-            // Store mock user token
-            localStorage.setItem('icc_token', 'mock-jwt-token-xyz-123');
-            localStorage.setItem('icc_user', JSON.stringify({ email, role: 'presiding_officer' }));
-
-            navigate('/icc');
+            if (response.data.success) {
+                localStorage.setItem('icc_token', response.data.token);
+                localStorage.setItem('icc_user', JSON.stringify(response.data.user));
+                navigate('/icc');
+            } else {
+                throw new Error("Invalid credentials");
+            }
         } catch (err) {
             alert("Invalid credentials.");
         } finally {

@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import axios from 'axios';
 import { Link, useNavigate } from 'react-router-dom';
 import {
     Building2, Activity, Users, AlertTriangle,
@@ -18,15 +19,47 @@ export default function Dashboard() {
     const navigate = useNavigate();
     const [filter, setFilter] = useState('all');
 
-    // Manage cases in state to ensure re-renders
-    const [cases, setCases] = useState(() => {
-        const stored = localStorage.getItem('icc_cases');
-        if (stored) return JSON.parse(stored);
+    // Manage cases in state
+    const [cases, setCases] = useState([]);
 
-        // Initialize if empty
-        localStorage.setItem('icc_cases', JSON.stringify(INITIAL_CASES));
-        return INITIAL_CASES;
-    });
+    useEffect(() => {
+        const fetchCases = async () => {
+            try {
+                const response = await axios.get('http://localhost:5000/api/icc/complaints');
+                const formattedCases = response.data.data.map(c => {
+                    const incidentDetails = typeof c.incident_details === 'string' ? JSON.parse(c.incident_details) : (c.incident_details || {});
+                    const accusedDetails = typeof c.accused_details === 'string' ? JSON.parse(c.accused_details) : (c.accused_details || {});
+
+                    return {
+                        id: c.case_id,
+                        filedDate: c.created_at,
+                        category: incidentDetails.description?.substring(0, 25) + '...' || 'Unspecified',
+                        status: c.status?.toLowerCase() || 'pending',
+                        daysElapsed: Math.max(0, Math.floor((new Date() - new Date(c.created_at)) / (1000 * 60 * 60 * 24))),
+
+                        // Keep full details for the detail view
+                        incidentDate: incidentDetails.date || 'Not specified',
+                        description: incidentDetails.description || 'No description',
+                        accused: {
+                            designation: accusedDetails.designation || 'Unknown',
+                            gender: accusedDetails.gender || 'Unknown',
+                            department: accusedDetails.department || 'Unknown'
+                        },
+                        evidence: [], // Evidence is fetched separately in a real scenario
+                        history: [{ stage: 'filed', date: c.created_at }]
+                    };
+                });
+
+                setCases(formattedCases);
+                // Temporarily cache locally so ComplaintDetail doesn't break until we refactor it too
+                localStorage.setItem('icc_cases', JSON.stringify(formattedCases));
+            } catch (err) {
+                console.error("Failed to fetch cases from database:", err);
+            }
+        };
+
+        fetchCases();
+    }, []);
 
     const handleLogout = () => {
         localStorage.removeItem('icc_token');

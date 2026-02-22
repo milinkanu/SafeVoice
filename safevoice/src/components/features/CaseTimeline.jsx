@@ -10,9 +10,11 @@ export function CaseTimeline({ historyEvents, initialDate }) {
     const day30 = addDays(filedDate, 30);
     const day90 = addDays(filedDate, 90);
 
+    const safeHistory = Array.isArray(historyEvents) ? historyEvents : [];
+
     // Status map
-    const hasStage = (stage) => historyEvents?.some(e => e.stage === stage);
-    const getStageDate = (stage) => historyEvents?.find(e => e.stage === stage)?.date;
+    const hasStage = (stage) => safeHistory.some(e => e.stage === stage);
+    const getStageDate = (stage) => safeHistory.find(e => e.stage === stage)?.date;
 
     const events = [
         {

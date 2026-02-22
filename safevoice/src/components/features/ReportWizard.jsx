@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
 import { FileUp, Shield, Lock, AlertTriangle, ArrowRight, ArrowLeft } from 'lucide-react';
 import { useReportStore } from '../../store/reportStore';
 import { Input } from '../ui/Input';
@@ -45,35 +46,26 @@ export function ReportWizard() {
                 // Send evidence hashes? If uploading sequentially, handle that via /api/evidence
             };
 
-            // 4. Fake API call for Phase 1 Mocking
-            await new Promise(resolve => setTimeout(resolve, 2000));
+            // 4. Send API request
+            const response = await axios.post('http://localhost:5000/api/complaints', payload);
+            const caseId = response.data.caseId;
             console.log('Payload secure:', payload);
 
-            // 5. Store passphrase temporarily for Success screen ONLY
-            const caseId = `SV-2026-XQ3-${Math.floor(Math.random() * 9000) + 1000}`;
+            // 5. Upload evidence files sequentially
+            for (const item of evidenceFiles) {
+                if (item.file) {
+                    const formData = new FormData();
+                    formData.append('file', item.file);
+                    formData.append('hash', item.hash);
+                    await axios.post(`http://localhost:5000/api/evidence/${caseId}`, formData, {
+                        headers: { 'Content-Type': 'multipart/form-data' }
+                    });
+                }
+            }
+
+            // 6. Store passphrase temporarily for Success screen ONLY
             sessionStorage.setItem('tempPassphrase', identity.mnemonic);
             sessionStorage.setItem('tempCaseId', caseId);
-
-            // 6. Push mock case to localStorage so ICC Dashboard can see it
-            const existingCases = JSON.parse(localStorage.getItem('icc_cases')) || [];
-            existingCases.unshift({
-                id: caseId,
-                filedDate: new Date().toISOString(),
-                category: incidentDetails.description?.substring(0, 25) + '...' || 'Unspecified',
-                status: 'pending',
-                daysElapsed: 0,
-                // Additional details for the ComplaintDetail page
-                incidentDate: incidentDetails.date || 'Not specified',
-                description: incidentDetails.description || 'No description',
-                accused: {
-                    designation: accusedDetails.designation || 'Unknown',
-                    gender: accusedDetails.gender || 'Unknown',
-                    department: accusedDetails.department || 'Unknown'
-                },
-                evidence: evidenceFiles.map(f => ({ name: f.name || 'File', hash: f.hash || 'pending', type: f.type || 'unknown' })),
-                history: [{ stage: 'filed', date: new Date().toISOString() }]
-            });
-            localStorage.setItem('icc_cases', JSON.stringify(existingCases));
 
             // 7. Clear draught
             clearReportDraft();
@@ -83,7 +75,7 @@ export function ReportWizard() {
 
         } catch (error) {
             console.error('Submission failed', error);
-            alert('Failed to generate secure identity or submit context.');
+            alert(`Submission Error: ${error.response?.data?.message || error.message || 'Failed to submit'}`);
         } finally {
             setIsSubmitting(false);
         }

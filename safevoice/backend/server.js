@@ -17,15 +17,15 @@ const PORT = process.env.PORT || 5000;
 // Security Middlewares
 app.use(helmet());
 app.use(cors({
-    origin: process.env.CLIENT_URL || 'http://localhost:5173',
+    origin: [process.env.CLIENT_URL, 'http://localhost:5173', 'http://localhost:5174'],
     credentials: true,
 }));
 app.use(express.json());
 
-// Rate Limiting (up to 100 requests per hour to limit abuse and spam)
+// Rate Limiting
 const limiter = rateLimit({
     windowMs: 60 * 60 * 1000, // 1 hour
-    max: 100,
+    max: 10000, // Increased for development/polling
     message: 'Too many requests from this IP, please try again after an hour',
     standardHeaders: true,
     legacyHeaders: false,

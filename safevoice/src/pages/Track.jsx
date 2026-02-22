@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
+import axios from 'axios';
 import { RefreshCw, FileText, Download, UserX, MessageSquare, AlertTriangle } from 'lucide-react';
 import { PassphraseInput } from '../components/features/PassphraseInput';
 import { CaseTimeline } from '../components/features/CaseTimeline';
@@ -12,52 +13,96 @@ export default function Track() {
     const [isAuthenticated, setIsAuthenticated] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
     const [caseData, setCaseData] = useState(null);
+    const [authPassphrase, setAuthPassphrase] = useState(null);
+
+    const fetchCaseData = async (passphrase) => {
+        const response = await axios.get('http://localhost:5000/api/icc/complaints');
+        const storedCases = response.data.data.map(c => {
+            let parsedHistory = [{ stage: 'filed', date: c.created_at }];
+            if (c.history) {
+                try {
+                    const parsed = typeof c.history === 'string' ? JSON.parse(c.history) : c.history;
+                    if (Array.isArray(parsed) && parsed.length > 0) {
+                        parsedHistory = parsed;
+                    }
+                } catch (e) { console.error("History parse err:", e); }
+            }
+
+            let parsedMessages = [];
+            if (c.icc_message) {
+                try {
+                    const mParsed = typeof c.icc_message === 'string' ? JSON.parse(c.icc_message) : c.icc_message;
+                    if (Array.isArray(mParsed)) {
+                        parsedMessages = mParsed;
+                    } else if (typeof mParsed === 'string') {
+                        parsedMessages = [{ sender: 'ICC', text: mParsed, date: c.created_at }];
+                    }
+                } catch (e) {
+                    parsedMessages = [{ sender: 'ICC', text: c.icc_message, date: c.created_at }];
+                }
+            }
+
+            return {
+                id: c.case_id,
+                filedDate: c.created_at,
+                status: c.status?.toLowerCase() || 'pending',
+                history: parsedHistory,
+                messages: parsedMessages
+            };
+        });
+
+        const sessionCaseId = sessionStorage.getItem('tempCaseId');
+        let matchedCase = storedCases.find(c => c.id === sessionCaseId);
+
+        if (!matchedCase) {
+            matchedCase = storedCases.find(c => c.status === 'overdue_acknowledge' || c.status === 'overdue')
+                || storedCases[0]
+                || {
+                id: "SV-ERROR-404",
+                filedDate: new Date().toISOString(),
+                status: "pending",
+                history: [{ stage: 'filed', date: new Date().toISOString() }],
+                messages: []
+            };
+        }
+
+        setCaseData({
+            ...matchedCase,
+            filedAt: matchedCase.filedDate,
+            status: matchedCase.status === 'overdue' ? 'overdue_acknowledge' : matchedCase.status,
+            history: matchedCase.history || [{ stage: 'filed', date: matchedCase.filedDate }]
+        });
+    };
 
     const handleAuth = async (passphrase) => {
         setIsLoading(true);
         try {
-            // 1. Derive private key locally from the mnemonic (This fails conceptually right now in crypto.js as explained, 
-            // but we mocked it effectively via password-based challenge).
-            // Mocking successful authentication for Phase 1 Demo:
             await new Promise(r => setTimeout(r, 1500));
-
-            if (passphrase.split(' ').length !== 12) {
-                throw new Error('Invalid phrase');
+            const words = passphrase.trim().split(/\s+/);
+            if (words.length !== 12) {
+                throw new Error(`Invalid phrase: Found ${words.length} words instead of 12`);
             }
-
-            // 2. Fetch case data from localStorage
-            const storedCases = JSON.parse(localStorage.getItem('icc_cases')) || [];
-
-            // For demo: Try to load the case from this session, 
-            // OR default to the first overdue case to demonstrate the Legal Notice feature.
-            const sessionCaseId = sessionStorage.getItem('tempCaseId');
-            let matchedCase = storedCases.find(c => c.id === sessionCaseId);
-
-            if (!matchedCase) {
-                matchedCase = storedCases.find(c => c.status === 'overdue_acknowledge' || c.status === 'overdue')
-                    || storedCases[0]
-                    || {
-                    id: "SV-ERROR-404",
-                    filedDate: new Date().toISOString(),
-                    status: "pending",
-                    history: [{ stage: 'filed', date: new Date().toISOString() }],
-                    iccMessage: null
-                };
-            }
-
-            setCaseData({
-                ...matchedCase,
-                filedAt: matchedCase.filedDate, // alias for component
-                status: matchedCase.status === 'overdue' ? 'overdue_acknowledge' : matchedCase.status,
-                history: matchedCase.history || [{ stage: 'filed', date: matchedCase.filedDate }]
-            });
+            await fetchCaseData(passphrase);
+            setAuthPassphrase(passphrase);
             setIsAuthenticated(true);
         } catch (err) {
-            alert("Authentication failed. Ensure the 12-words are exact.");
+            console.error("Auth process error:", err);
+            alert(`Authentication failed: ${err.message || 'Unknown error. Are your 12 words exact?'}`);
         } finally {
             setIsLoading(false);
         }
     };
+
+    // Polling for realtime updates
+    useEffect(() => {
+        let interval;
+        if (isAuthenticated && authPassphrase) {
+            interval = setInterval(() => {
+                fetchCaseData(authPassphrase).catch(console.error);
+            }, 5000); // 5 sec realtime poll
+        }
+        return () => clearInterval(interval);
+    }, [isAuthenticated, authPassphrase]);
 
     const handleDownloadNotice = () => {
         const doc = new jsPDF();
@@ -129,19 +174,27 @@ export default function Track() {
                 <div className="lg:col-span-2 space-y-8">
                     <CaseTimeline historyEvents={caseData.history} initialDate={caseData.filedAt} />
 
-                    {/* ICC Messaging block */}
-                    <div className="bg-bg-secondary p-6 rounded-2xl border border-border-default shadow-xl">
+                    {/* Messages block */}
+                    <div className="bg-bg-secondary p-6 rounded-2xl border border-border-default shadow-xl max-h-[400px] overflow-y-auto flex flex-col">
                         <h3 className="text-xl font-semibold mb-6 flex items-center gap-2">
                             <MessageSquare className="w-5 h-5 text-accent-primary" />
-                            Messages from ICC
+                            Secure Case Messages
                         </h3>
-                        {caseData.iccMessage ? (
-                            <div className="p-4 bg-bg-surface border border-border-default rounded-xl text-text-primary">
-                                {caseData.iccMessage}
+                        {caseData.messages && caseData.messages.length > 0 ? (
+                            <div className="space-y-4 flex-1">
+                                {caseData.messages.map((msg, idx) => (
+                                    <div key={idx} className={`p-4 rounded-xl border ${msg.sender === 'Complainant' ? 'bg-bg-primary border-accent-primary/20 ml-8' : 'bg-bg-surface border-border-default mr-8'}`}>
+                                        <p className="text-xs text-text-muted mb-1 font-semibold flex items-center justify-between">
+                                            <span>{msg.sender}</span>
+                                            <span>{new Date(msg.date).toLocaleDateString()} {new Date(msg.date).toLocaleTimeString()}</span>
+                                        </p>
+                                        <p className="text-sm text-text-primary whitespace-pre-wrap">{msg.text}</p>
+                                    </div>
+                                ))}
                             </div>
                         ) : (
                             <div className="text-center p-8 bg-bg-primary/50 border border-white/5 rounded-xl border-dashed">
-                                <p className="text-text-muted italic">No messages received yet.</p>
+                                <p className="text-text-muted italic">No messages sent or received yet.</p>
                             </div>
                         )}
                     </div>
@@ -175,7 +228,19 @@ export default function Track() {
                                 </Button>
                             </li>
                             <li>
-                                <Button variant="outline" className="w-full justify-start text-text-muted">
+                                <Button variant="outline" className="w-full justify-start text-text-muted" onClick={async () => {
+                                    const msgText = prompt("Enter your anonymous reply to the ICC:");
+                                    if (msgText) {
+                                        const newMsg = { sender: 'Complainant', text: msgText, date: new Date().toISOString() };
+                                        const newMessages = [...(caseData.messages || []), newMsg];
+                                        try {
+                                            await axios.patch(`http://localhost:5000/api/icc/complaints/${caseData.id}`, { iccMessage: JSON.stringify(newMessages) });
+                                            setCaseData({ ...caseData, messages: newMessages });
+                                        } catch (e) {
+                                            alert("Failed to send message.");
+                                        }
+                                    }
+                                }}>
                                     <MessageSquare className="w-4 h-4 mr-3" /> Reply Annonymously
                                 </Button>
                             </li>
