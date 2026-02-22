@@ -22,6 +22,13 @@ export const useReportStore = create(
                 phone: '',
                 language: '',
             },
+            compassResult: null,
+            isCompassComplete: false,
+
+            setCompassResult: (result) => set({
+                compassResult: result,
+                isCompassComplete: true,
+            }),
 
             setIncidentDetails: (updates) => set((state) => ({
                 incidentDetails: { ...state.incidentDetails, ...updates }
@@ -41,7 +48,9 @@ export const useReportStore = create(
                 incidentDetails: { date: '', location: '', department: '', nature: [], description: '', frequency: '' },
                 accusedDetails: { designation: '', gender: '', department: '' },
                 evidenceFiles: [],
-                contactDetails: { phone: '', language: '' }
+                contactDetails: { phone: '', language: '' },
+                compassResult: null,
+                isCompassComplete: false,
             }),
         }),
         {
@@ -51,6 +60,8 @@ export const useReportStore = create(
                 incidentDetails: state.incidentDetails,
                 accusedDetails: state.accusedDetails,
                 contactDetails: state.contactDetails,
+                compassResult: state.compassResult,
+                isCompassComplete: state.isCompassComplete,
             }),
         }
     )

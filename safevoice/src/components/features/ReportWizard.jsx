@@ -19,7 +19,8 @@ export function ReportWizard() {
         accusedDetails, setAccusedDetails,
         evidenceFiles, setEvidenceFiles,
         contactDetails, setContactDetails,
-        clearReportDraft
+        clearReportDraft,
+        compassResult
     } = useReportStore();
 
     const steps = ["Incident", "Details", "Evidence", "Contact"];
@@ -37,13 +38,16 @@ export function ReportWizard() {
             // 2. Export public key to send to server
             const publicKeySPKI = await exportPublicKey(identity.publicKey);
 
-            // 3. Prepare payload
             const payload = {
-                incidentDetails,
+                incidentDetails: {
+                    ...incidentDetails,
+                    poshType: compassResult?.poshType || [],
+                    timeBarredDelayReason: incidentDetails.delayReason || null,
+                },
                 accusedDetails,
                 contactPhone: contactDetails.phone || null,
                 publicKey: publicKeySPKI,
-                // Send evidence hashes? If uploading sequentially, handle that via /api/evidence
+                routeTo: compassResult?.routeTo || 'ICC',
             };
 
             // 4. Send API request
@@ -126,7 +130,10 @@ export function ReportWizard() {
                     </Button>
 
                     {currentStep < steps.length - 1 ? (
-                        <Button onClick={handleNext} disabled={!incidentDetails.description && currentStep === 0}>
+                        <Button onClick={handleNext} disabled={
+                            (currentStep === 0 && !incidentDetails.description) ||
+                            (currentStep === 0 && compassResult?.outcome === 'TIME_BARRED' && !incidentDetails.delayReason)
+                        }>
                             Next step <ArrowRight className="w-4 h-4 ml-2" />
                         </Button>
                     ) : (
@@ -156,12 +163,26 @@ export function ReportWizard() {
 }
 
 function SectionIncident({ data, update }) {
+    const { compassResult } = useReportStore();
+    const isTimeBarred = compassResult?.outcome === 'TIME_BARRED';
+
     return (
         <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-300">
             <div className="mb-2">
                 <h2 className="text-2xl font-display text-text-primary">Incident Details</h2>
                 <p className="text-text-muted">Describe what happened. Your description is encrypted on your device before submission.</p>
             </div>
+
+            {compassResult?.poshType?.length > 0 && (
+                <div className="bg-bg-surface p-4 rounded-xl border border-white/5 mb-4">
+                    <p className="text-xs text-text-muted uppercase tracking-wider font-bold mb-2">Automated POSH Classifications Applied:</p>
+                    <div className="flex flex-wrap gap-2">
+                        {compassResult.poshType.map(t => (
+                            <span key={t} className="px-2 py-1 bg-accent-primary/10 text-accent-primary rounded-md text-xs font-semibold">{t.replace('_', ' ')}</span>
+                        ))}
+                    </div>
+                </div>
+            )}
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <Input
@@ -192,6 +213,23 @@ function SectionIncident({ data, update }) {
                     {data.description?.length || 0} characters
                 </p>
             </div>
+
+            {isTimeBarred && (
+                <div className="space-y-1.5 p-4 bg-accent-warm/10 border border-accent-warm/20 rounded-xl">
+                    <label className="text-sm font-medium text-text-primary flex items-center gap-2">
+                        <AlertTriangle className="w-4 h-4 text-accent-warm" />
+                        Reason for Delay (Required by Law)
+                    </label>
+                    <p className="text-xs text-text-muted mb-2">Because this incident occurred over 3 months ago, the ICC requires a valid reason for the delay to grant an extension (e.g., fear of retaliation, trauma).</p>
+                    <textarea
+                        className="w-full h-24 rounded-md border border-border-default bg-bg-surface px-3 py-2 text-sm text-text-primary placeholder:text-text-muted focus:outline-none focus:ring-2 focus:ring-accent-primary resize-y"
+                        placeholder="Explain why you could not file this complaint sooner..."
+                        value={data.delayReason || ''}
+                        onChange={(e) => update({ delayReason: e.target.value })}
+                        required
+                    />
+                </div>
+            )}
 
             <div className="p-4 bg-bg-surface border border-white/5 rounded-xl flex items-start gap-3">
                 <Lock className="w-5 h-5 text-accent-primary shrink-0 mt-0.5" />

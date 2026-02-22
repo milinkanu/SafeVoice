@@ -8,6 +8,7 @@ import Report from './pages/Report';
 import ReportSuccess from './pages/ReportSuccess';
 import Track from './pages/Track';
 import Evidence from './pages/Evidence';
+import IncidentLog from './pages/IncidentLog';
 
 // ICC Pages
 import Dashboard from './pages/icc/Dashboard';
@@ -26,6 +27,7 @@ function App() {
           <Route path="/report/success" element={<PageWrapper><ReportSuccess /></PageWrapper>} />
           <Route path="/track" element={<PageWrapper><Track /></PageWrapper>} />
           <Route path="/evidence/:caseToken" element={<PageWrapper><Evidence /></PageWrapper>} />
+          <Route path="/log" element={<PageWrapper><IncidentLog /></PageWrapper>} />
 
           {/* ICC Routes (Dashboard handles its own layout, login can use PageWrapper) */}
           <Route path="/icc/login" element={<PageWrapper><Login /></PageWrapper>} />

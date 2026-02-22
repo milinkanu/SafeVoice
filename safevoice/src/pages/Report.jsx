@@ -1,7 +1,23 @@
+import { useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { ReportWizard } from '../components/features/ReportWizard';
-import { PenTool } from 'lucide-react';
+import { PenTool, ShieldAlert } from 'lucide-react';
+import { useReportStore } from '../store/reportStore';
 
 export default function Report() {
+    const navigate = useNavigate();
+    const { isCompassComplete, compassResult } = useReportStore();
+
+    useEffect(() => {
+        if (!isCompassComplete) {
+            navigate('/compass', { replace: true });
+        }
+    }, [isCompassComplete, navigate]);
+
+    if (!isCompassComplete) return null;
+
+    const isLcc = compassResult?.outcome === 'LCC_ROUTE';
+
     return (
         <div className="max-w-4xl mx-auto w-full flex flex-col items-center">
             <div className="text-center mb-10">
@@ -9,10 +25,12 @@ export default function Report() {
                     <PenTool className="w-8 h-8" />
                 </div>
                 <h1 className="text-4xl sm:text-5xl font-display text-text-primary mb-4">
-                    File Anonymous Complaint
+                    {isLcc ? 'File LCC Complaint' : 'File Anonymous Complaint'}
                 </h1>
                 <p className="text-lg text-text-muted max-w-2xl mx-auto">
-                    Your identity will be protected cryptographically. Your organization's ICC will receive the compliant and evidence but will not know who you are unless you choose to reveal yourself.
+                    {isLcc
+                        ? "Your identity will be protected cryptographically. Your complaint will be routed directly to the Local Complaints Committee (LCC) for external adjudication."
+                        : "Your identity will be protected cryptographically. Your organization's ICC will receive the compliant and evidence but will not know who you are unless you choose to reveal yourself."}
                 </p>
             </div>
 
