@@ -103,7 +103,22 @@ export default function IncidentLog() {
                     <div className="space-y-4">
                         <div>
                             <label className="block text-sm font-medium text-text-muted mb-1">Date of Incident</label>
-                            <input type="date" value={newDate} onChange={e => setNewDate(e.target.value)} className="w-full bg-bg-primary border border-border-default rounded-xl p-3 text-text-primary" />
+                            <input
+                                type="date"
+                                max={new Date().toISOString().split("T")[0]}
+                                min="1980-01-01"
+                                value={newDate}
+                                onChange={e => {
+                                    let val = e.target.value;
+                                    const maxDate = new Date().toISOString().split("T")[0];
+                                    if (val > maxDate) val = maxDate;
+                                    setNewDate(val);
+                                }}
+                                className={`w-full bg-bg-primary border ${newDate && new Date(newDate).getFullYear() < 1980 ? 'border-accent-danger' : 'border-border-default'} rounded-xl p-3 text-text-primary`}
+                            />
+                            {newDate && new Date(newDate).getFullYear() < 1980 && (
+                                <p className="text-xs text-accent-danger mt-1">Please enter a realistic year.</p>
+                            )}
                         </div>
                         <div>
                             <label className="block text-sm font-medium text-text-muted mb-1">What happened? (Be specific)</label>
@@ -115,7 +130,7 @@ export default function IncidentLog() {
                         </div>
                         <div className="flex justify-end gap-3 pt-4">
                             <Button variant="ghost" onClick={() => setIsAdding(false)}>Cancel</Button>
-                            <Button onClick={handleAdd}><Save className="w-4 h-4 mr-2" /> Save Formally</Button>
+                            <Button onClick={handleAdd} disabled={newDate && new Date(newDate).getFullYear() < 1980}><Save className="w-4 h-4 mr-2" /> Save Formally</Button>
                         </div>
                     </div>
                 </div>

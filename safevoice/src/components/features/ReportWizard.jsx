@@ -132,7 +132,8 @@ export function ReportWizard() {
                     {currentStep < steps.length - 1 ? (
                         <Button onClick={handleNext} disabled={
                             (currentStep === 0 && !incidentDetails.description) ||
-                            (currentStep === 0 && compassResult?.outcome === 'TIME_BARRED' && !incidentDetails.delayReason)
+                            (currentStep === 0 && compassResult?.outcome === 'TIME_BARRED' && !incidentDetails.delayReason) ||
+                            (currentStep === 0 && incidentDetails.date && new Date(incidentDetails.date).getFullYear() < 1980)
                         }>
                             Next step <ArrowRight className="w-4 h-4 ml-2" />
                         </Button>
@@ -188,8 +189,16 @@ function SectionIncident({ data, update }) {
                 <Input
                     type="date"
                     label="Date of incident (Approximate)"
+                    max={new Date().toISOString().split("T")[0]}
+                    min="1980-01-01"
                     value={data.date || ''}
-                    onChange={(e) => update({ date: e.target.value })}
+                    error={data.date && new Date(data.date).getFullYear() < 1980 ? "Please enter a realistic year." : undefined}
+                    onChange={(e) => {
+                        let val = e.target.value;
+                        const maxDate = new Date().toISOString().split("T")[0];
+                        if (val > maxDate) val = maxDate;
+                        update({ date: val });
+                    }}
                 />
                 <Input
                     type="text"
