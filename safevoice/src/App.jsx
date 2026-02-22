@@ -12,7 +12,6 @@ import IncidentLog from './pages/IncidentLog';
 
 // ICC Pages
 import Dashboard from './pages/icc/Dashboard';
-import ComplaintDetail from './pages/icc/ComplaintDetail';
 import Login from './pages/icc/Login';
 
 function App() {
@@ -32,7 +31,6 @@ function App() {
           {/* ICC Routes (Dashboard handles its own layout, login can use PageWrapper) */}
           <Route path="/icc/login" element={<PageWrapper><Login /></PageWrapper>} />
           <Route path="/icc" element={<Dashboard />} />
-          <Route path="/icc/complaint/:id" element={<ComplaintDetail />} />
         </Routes>
       </div>
     </BrowserRouter>
