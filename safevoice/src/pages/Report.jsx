@@ -6,15 +6,7 @@ import { useReportStore } from '../store/reportStore';
 
 export default function Report() {
     const navigate = useNavigate();
-    const { isCompassComplete, compassResult } = useReportStore();
-
-    useEffect(() => {
-        if (!isCompassComplete) {
-            navigate('/compass', { replace: true });
-        }
-    }, [isCompassComplete, navigate]);
-
-    if (!isCompassComplete) return null;
+    const { compassResult } = useReportStore();
 
     const isLcc = compassResult?.outcome === 'LCC_ROUTE';
 

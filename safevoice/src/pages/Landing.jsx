@@ -1,11 +1,14 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Shield, ChevronDown, Compass, Lock, RefreshCw, FileText, CheckCircle2 } from 'lucide-react';
 import { Button } from '../components/ui/Button';
+import { useReportStore } from '../store/reportStore';
 
 export default function Landing() {
     const [activeFaq, setActiveFaq] = useState(null);
+    const navigate = useNavigate();
+    const clearReportDraft = useReportStore(state => state.clearReportDraft);
 
     const toggleFaq = (idx) => {
         setActiveFaq(activeFaq === idx ? null : idx);
@@ -63,11 +66,16 @@ export default function Landing() {
                 </p>
 
                 <div className="flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-6 w-full max-w-md mx-auto sm:max-w-none">
-                    <Link to="/report" className="w-full sm:w-auto">
-                        <Button size="lg" className="w-full sm:w-auto h-14 px-8 text-base shadow-[0_0_30px_-5px_var(--accent-primary)] hover:shadow-none hover:-translate-y-0.5 transition-all">
-                            Report an Incident
-                        </Button>
-                    </Link>
+                    <Button
+                        size="lg"
+                        onClick={() => {
+                            clearReportDraft();
+                            navigate('/report');
+                        }}
+                        className="w-full sm:w-auto h-14 px-8 text-base shadow-[0_0_30px_-5px_var(--accent-primary)] hover:shadow-none hover:-translate-y-0.5 transition-all"
+                    >
+                        Report an Incident
+                    </Button>
                     <Link to="/compass" className="w-full sm:w-auto">
                         <Button size="lg" variant="outline" className="w-full sm:w-auto h-14 px-8 text-base">
                             Check Your Eligibility

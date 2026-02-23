@@ -1,9 +1,12 @@
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Shield } from 'lucide-react';
 import { Button } from '../ui/Button';
+import { useReportStore } from '../../store/reportStore';
 
 export function Navbar() {
     const location = useLocation();
+    const navigate = useNavigate();
+    const clearReportDraft = useReportStore(state => state.clearReportDraft);
     const isIccRoute = location.pathname.startsWith('/icc');
 
     // Do not show public navbar on ICC dashboard pages
@@ -27,11 +30,12 @@ export function Navbar() {
                             Track Case
                         </Button>
                     </Link>
-                    <Link to="/report">
-                        <Button variant="primary">
-                            Report Incident
-                        </Button>
-                    </Link>
+                    <Button variant="primary" onClick={() => {
+                        clearReportDraft();
+                        navigate('/report');
+                    }}>
+                        Report Incident
+                    </Button>
                 </nav>
             </div>
         </header>

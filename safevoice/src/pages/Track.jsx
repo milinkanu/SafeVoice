@@ -96,13 +96,13 @@ export default function Track() {
     // Polling for realtime updates
     useEffect(() => {
         let interval;
-        if (isAuthenticated && authPassphrase) {
+        if (isAuthenticated && authPassphrase && !caseData?.isSimulation) {
             interval = setInterval(() => {
                 fetchCaseData(authPassphrase).catch(console.error);
             }, 5000); // 5 sec realtime poll
         }
         return () => clearInterval(interval);
-    }, [isAuthenticated, authPassphrase]);
+    }, [isAuthenticated, authPassphrase, caseData?.isSimulation]);
 
     const handleDownloadNotice = () => {
         const doc = new jsPDF();
@@ -126,6 +126,32 @@ export default function Track() {
 
         doc.text("Signature: ______________", 20, 170);
         doc.save(`Legal-Notice-${caseData.id}.pdf`);
+    };
+
+    const handleDownloadLccEscalation = () => {
+        const doc = new jsPDF();
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(18);
+        doc.text("FORMAL LCC ESCALATION PETITION", 20, 30);
+
+        doc.setFont("helvetica", "normal");
+        doc.setFontSize(12);
+        doc.text(`Reference Case ID: ${caseData.id}`, 20, 50);
+        doc.text(`Original Filing Date: ${new Date(caseData.filedAt).toLocaleDateString()}`, 20, 60);
+
+        doc.text("To the District Magistrate / Local Complaints Committee (LCC),", 20, 80);
+
+        const body = `This document serves as a formal escalation of a POSH complaint. The Internal Complaints Committee (ICC) of the respective organization has failed to provide a resolution within the legally mandated 90-day period. 
+
+Under Section 11 of the POSH Act, 2013, jurisdiction is hereby requested to be transferred to the LCC. A statutory directive should be issued to the organization to surrender the cryptographically sealed evidence hash chain immediately.`;
+
+        const splittedText = doc.splitTextToSize(body, 170);
+        doc.text(splittedText, 20, 95);
+
+        doc.text("Action Required: Immediate Case Transfer Protocol.", 20, 150);
+
+        doc.text("Complainant Signature: ______________", 20, 180);
+        doc.save(`LCC-Escalation-${caseData.id}.pdf`);
     };
 
     if (!isAuthenticated) {
@@ -203,9 +229,47 @@ export default function Track() {
                 {/* Right Column (Actions & Intelligence) */}
                 <div className="space-y-6">
 
+                    <div className="rounded-2xl p-6 shadow-sm mb-6 bg-purple-900/10 border border-purple-500/30">
+                        <h3 className="font-semibold text-purple-400 mb-2 flex items-center gap-2">
+                            <span className="bg-purple-500/20 text-purple-300 text-[10px] uppercase font-bold px-2 py-0.5 rounded">Judges / Demo</span>
+                            Simulation Controls
+                        </h3>
+                        <p className="text-sm text-text-muted mb-4">Demonstrate SLA breaches and Local Complaints Committee (LCC) escalations.</p>
+                        <div className="flex gap-3 flex-wrap">
+                            <Button variant="outline" size="sm" onClick={() => setCaseData({ ...caseData, status: 'overdue_acknowledge', isSimulation: true })}>
+                                Simulate: ICC Ignored (7+ Days)
+                            </Button>
+                            <Button variant="outline" size="sm" onClick={() => setCaseData({ ...caseData, status: 'unresolved', filedAt: new Date(Date.now() - 95 * 24 * 60 * 60 * 1000).toISOString(), isSimulation: true })}>
+                                Simulate: Resolution Overdue (90+ Days)
+                            </Button>
+                            <Button variant="outline" size="sm" onClick={() => {
+                                setCaseData(prev => ({ ...prev, isSimulation: false }));
+                                fetchCaseData(authPassphrase);
+                            }}>
+                                Reset Simulation
+                            </Button>
+                        </div>
+                    </div>
+
+                    {/* LCC Escalation Alert (For Unresolved > 90 days) */}
+                    {caseData.status === 'unresolved' && (
+                        <div className="bg-accent-danger/10 border border-accent-danger/20 rounded-2xl p-6 text-accent-danger shadow-inner animate-in slide-in-from-right duration-500 mb-6">
+                            <h3 className="font-bold flex items-center gap-2 mb-2">
+                                <AlertTriangle className="w-5 h-5" /> Statutory LCC Escalation Available
+                            </h3>
+                            <p className="text-sm mb-4 leading-relaxed line-clamp-3 hover:line-clamp-none transition-all duration-300">
+                                As per Section 11 of the POSH Act 2013, since the ICC has not provided a resolution within the mandated 90-day period (or if you are dissatisfied with the findings), you have the legal right to escalate your complaint to the District Local Complaints Committee (LCC) or an Appellate Authority.
+                            </p>
+                            <Button variant="danger" className="w-full text-xs sm:text-sm font-semibold h-auto py-3 leading-normal" onClick={handleDownloadLccEscalation}>
+                                <Download className="w-4 h-4 mr-2 shrink-0" />
+                                Proceed to LCC Portal (Download Petition)
+                            </Button>
+                        </div>
+                    )}
+
                     {/* Overdue Action Alert */}
                     {caseData.status === 'overdue_acknowledge' && (
-                        <div className="bg-accent-danger/10 border border-accent-danger/20 rounded-2xl p-6 text-accent-danger shadow-inner animate-in pulse">
+                        <div className="bg-accent-danger/10 border border-accent-danger/20 rounded-2xl p-6 text-accent-danger shadow-inner animate-in pulse mb-6">
                             <h3 className="font-bold flex items-center gap-2 mb-2">
                                 <AlertTriangle className="w-5 h-5" /> ICC Deadline Missed
                             </h3>

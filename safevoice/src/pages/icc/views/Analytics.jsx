@@ -122,15 +122,18 @@ export default function Analytics() {
                         <span className="text-xs text-text-muted font-normal bg-bg-surface px-3 py-1 rounded-full border border-border-default">System Average: {avg.toFixed(1)}</span>
                     </h2>
 
-                    <div className="flex-1 flex items-end gap-6 pt-10 mt-auto min-h-[200px] border-b-2 border-border-default">
+                    <div className="flex-1 flex items-end gap-4 pt-10 mt-auto h-[250px] border-b-2 border-border-default mb-6">
                         {Object.entries(depts).map(([dept, count]) => {
                             const isPattern = count > avg * 1.5 && count >= 2;
+                            const maxCount = Math.max(...Object.values(depts), 1);
+                            const heightPercent = (count / maxCount) * 100;
+
                             return (
-                                <div key={dept} className="relative flex-1 group flex flex-col items-center justify-end h-full">
-                                    {isPattern && <span className="absolute -top-10 text-[10px] font-bold text-white bg-accent-danger px-2 py-1 rounded shadow-lg animate-bounce uppercase">Risk</span>}
-                                    <div className="text-xs font-bold text-text-primary mb-2 opacity-0 group-hover:opacity-100 transition-opacity absolute -top-6 bg-bg-surface px-2 py-1 rounded">{count}</div>
-                                    <div className={`w-full rounded-t-lg transition-all duration-1000 origin-bottom ${isPattern ? 'bg-gradient-to-t from-accent-danger/80 to-accent-danger' : 'bg-gradient-to-t from-border-default to-text-muted/50'}`} style={{ height: `${(count / Math.max(...Object.values(depts))) * 100}%` }} />
-                                    <span className="absolute -bottom-6 text-[10px] font-bold text-text-muted uppercase text-center w-full truncate">{dept}</span>
+                                <div key={dept} className="relative flex-1 group flex flex-col items-center justify-end w-full" style={{ height: `${heightPercent}%` }}>
+                                    {isPattern && <span className="absolute -top-10 text-[10px] font-bold text-white bg-accent-danger px-2 py-1 rounded shadow-lg animate-bounce uppercase whitespace-nowrap z-10">Risk</span>}
+                                    <div className="text-xs font-bold text-text-primary mb-2 opacity-0 group-hover:opacity-100 transition-opacity absolute -top-6 bg-bg-surface px-2 py-1 rounded shadow-md z-20">{count}</div>
+                                    <div className={`w-full h-full rounded-t-lg transition-all duration-1000 origin-bottom ${isPattern ? 'bg-gradient-to-t from-accent-danger/80 to-accent-danger' : 'bg-gradient-to-t from-border-default to-text-muted/50'}`} />
+                                    <span className="absolute -bottom-6 text-[10px] font-bold text-text-muted uppercase text-center w-full truncate px-1">{dept}</span>
                                 </div>
                             );
                         })}
