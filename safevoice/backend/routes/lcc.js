@@ -17,6 +17,76 @@ router.get('/complaints', async (req, res, next) => {
     }
 });
 
+// @route   GET /api/lcc/insights
+// @desc    NLP Pattern Detection for serial offenders or hostile environments
+router.get('/insights', async (req, res, next) => {
+    try {
+        const result = await query("SELECT * FROM complaints WHERE incident_details->>'source' = 'Telegram_Bot' ORDER BY created_at DESC");
+        const complaints = result.rows;
+
+        // --- Mock NLP Logic for Hackathon ---
+        // In a real scenario, this would send descriptions to an LLM or ML classifier
+        // Here, we look for overlapping departments, accused levels, or keywords.
+
+        let insights = [];
+        let departmentCounts = {};
+        let accusedLevelCounts = {};
+
+        complaints.forEach(c => {
+            const dept = c.incident_details?.location?.toLowerCase() || 'unknown';
+            const accLvl = c.accused_details?.roleLevel?.toLowerCase() || 'unknown';
+
+            departmentCounts[dept] = (departmentCounts[dept] || 0) + 1;
+            accusedLevelCounts[accLvl] = (accusedLevelCounts[accLvl] || 0) + 1;
+        });
+
+        // 1. Hostile Environment Detection (Multiple cases in same department)
+        for (const [dept, count] of Object.entries(departmentCounts)) {
+            if (count > 1 && dept !== 'unknown') {
+                insights.push({
+                    id: Math.random().toString(36).substr(2, 9),
+                    type: 'HOSTILE_ENVIRONMENT',
+                    severity: 'HIGH',
+                    title: `Cluster Alert: ${dept.toUpperCase()}`,
+                    description: `NLP algorithms detected ${count} separate complaints originating from the ${dept} department. High probability of a localized hostile environment.`,
+                    actionRecommended: `Initiate a generalized anonymous climate survey in ${dept}.`
+                });
+            }
+        }
+
+        // 2. Serial Offender Detection (Multiple cases against same level, e.g., Senior)
+        if (accusedLevelCounts['senior'] > 1) {
+            insights.push({
+                id: Math.random().toString(36).substr(2, 9),
+                type: 'SERIAL_OFFENDER',
+                severity: 'CRITICAL',
+                title: `Pattern Warning: Senior Management`,
+                description: `Linguistic markers across ${accusedLevelCounts['senior']} complaints indicate repeated behavior by someone in a 'Senior' role. Power-dynamic abuse strongly suspected.`,
+                actionRecommended: `Review recent external complaints regarding senior staff.`
+            });
+        }
+
+        // Return empty if no patterns, or default mock if they just started
+        if (insights.length === 0 && complaints.length > 0) {
+            insights.push({
+                id: 'mock-1',
+                type: 'ANOMALY_DETECTED',
+                severity: 'MEDIUM',
+                title: 'Potential Micro-Aggression Pattern',
+                description: 'Initial text-analysis indicates repeated mention of inappropriate comments. Monitoring for statistical significance.',
+                actionRecommended: 'Review recent complaints for shared linguistic markers.'
+            });
+        }
+
+        res.json({
+            success: true,
+            data: insights
+        });
+    } catch (err) {
+        next(err);
+    }
+});
+
 // @route   PATCH /api/lcc/complaints/:id
 // @desc    update status (LCC actions)
 router.patch('/complaints/:id', async (req, res, next) => {

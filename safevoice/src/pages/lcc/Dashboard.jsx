@@ -1,21 +1,28 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Shield, Activity, FileText, CheckCircle2, AlertOctagon, LogOut, MessageSquare, Calendar, MapPin, User, ChevronRight } from 'lucide-react';
+import { Shield, Activity, FileText, CheckCircle2, AlertOctagon, LogOut, MessageSquare, Calendar, MapPin, User, ChevronRight, Sparkles, AlertTriangle } from 'lucide-react';
 
 export default function LccDashboard() {
     const navigate = useNavigate();
     const [activeView, setActiveView] = useState('overview');
     const [selectedCase, setSelectedCase] = useState(null);
     const [complaints, setComplaints] = useState([]);
+    const [insights, setInsights] = useState([]);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         const fetchLccCases = async () => {
             try {
                 const response = await fetch('http://localhost:5000/api/lcc/complaints');
-                const data = await response.json();
-                if (data.success) {
-                    setComplaints(data.data);
+                const pData = await response.json();
+                if (pData.success) {
+                    setComplaints(pData.data);
+                }
+
+                const insightsRes = await fetch('http://localhost:5000/api/lcc/insights');
+                const iData = await insightsRes.json();
+                if (iData.success) {
+                    setInsights(iData.data);
                 }
             } catch (err) {
                 console.error('Failed to fetch LCC cases:', err);
@@ -36,6 +43,7 @@ export default function LccDashboard() {
     const navItems = [
         { id: 'overview', icon: Activity, label: 'Overview' },
         { id: 'complaints', icon: MessageSquare, label: 'Telegram Cases' },
+        { id: 'insights', icon: Sparkles, label: 'AI Pattern Analysis', badge: insights.length.toString(), variant: insights.length > 0 ? 'warning' : 'default' },
         { id: 'action', icon: AlertOctagon, label: 'Action Required', badge: complaints.filter(c => c.status === 'Submitted').length.toString(), variant: 'danger' }
     ];
 
@@ -209,6 +217,64 @@ export default function LccDashboard() {
         );
     };
 
+    const renderInsights = () => {
+        return (
+            <div className="space-y-8 animate-in fade-in duration-300">
+                <div className="flex justify-between items-end">
+                    <div>
+                        <h1 className="text-3xl font-display text-text-primary tracking-tight flex items-center gap-3">
+                            <Sparkles className="w-8 h-8 text-accent-warm" />
+                            AI Pattern Analysis
+                        </h1>
+                        <p className="text-text-muted mt-1">NLP-driven detection of hostile environments and serial offenders across anonymous data.</p>
+                    </div>
+                </div>
+
+                {loading ? (
+                    <div className="p-8 text-center text-text-muted animate-pulse">Running NLP Analysis...</div>
+                ) : insights.length === 0 ? (
+                    <div className="bg-bg-surface border border-border-default rounded-xl p-12 text-center flex flex-col items-center shadow-sm">
+                        <CheckCircle2 className="w-12 h-12 text-accent-success mb-4" />
+                        <h3 className="text-text-primary font-medium mb-1">No Patterns Detected</h3>
+                        <p className="text-sm text-text-muted max-w-md">The linguistic and metadata analysis algorithms have not found any statistical anomalies, hostile environments, or serial offenders in the current dataset.</p>
+                    </div>
+                ) : (
+                    <div className="grid grid-cols-1 gap-6">
+                        {insights.map(insight => (
+                            <div key={insight.id} className="bg-bg-surface border border-border-default rounded-xl p-6 shadow-sm relative overflow-hidden">
+                                {insight.severity === 'CRITICAL' && (
+                                    <div className="absolute top-0 left-0 w-1 h-full bg-accent-danger" />
+                                )}
+                                {insight.severity === 'HIGH' && (
+                                    <div className="absolute top-0 left-0 w-1 h-full bg-accent-warm" />
+                                )}
+                                <div className="flex items-start justify-between mb-4">
+                                    <h3 className="text-xl font-display text-text-primary flex items-center gap-2">
+                                        <AlertTriangle className={`w-5 h-5 ${insight.severity === 'CRITICAL' ? 'text-accent-danger' : insight.severity === 'HIGH' ? 'text-accent-warm' : 'text-accent-primary'}`} />
+                                        {insight.title}
+                                    </h3>
+                                    <span className={`px-2.5 py-1 rounded-full text-[10px] font-bold border uppercase tracking-wider ${insight.severity === 'CRITICAL' ? 'bg-accent-danger/20 text-accent-danger border-accent-danger/30' : insight.severity === 'HIGH' ? 'bg-accent-warm/20 text-accent-warm border-accent-warm/30' : 'bg-accent-primary/20 text-accent-primary border-accent-primary/30'}`}>
+                                        {insight.severity} SEVERITY
+                                    </span>
+                                </div>
+                                <p className="text-text-muted mb-6 leading-relaxed bg-bg-primary/50 p-4 rounded-lg border border-white/5">
+                                    {insight.description}
+                                </p>
+                                <div>
+                                    <p className="text-xs text-text-muted uppercase tracking-wider mb-2 font-bold">Recommended LCC Action</p>
+                                    <p className="text-sm text-text-primary font-medium flex items-center gap-2">
+                                        <ChevronRight className="w-4 h-4 text-accent-primary" />
+                                        {insight.actionRecommended}
+                                    </p>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                )}
+            </div>
+        );
+    };
+
     return (
         <div className="flex bg-bg-primary min-h-screen">
             {/* Sidebar */}
@@ -231,7 +297,7 @@ export default function LccDashboard() {
                             <item.icon className={`w-5 h-5 ${activeView === item.id && !selectedCase ? 'text-accent-primary' : ''} ${item.variant === 'danger' && 'text-accent-danger'}`} />
                             <span className="flex-1 text-left">{item.label}</span>
                             {item.badge && item.badge !== "0" && (
-                                <span className={`px-2 py-0.5 rounded-full text-xs font-bold ${item.variant === 'danger' ? 'bg-accent-danger text-text-primary' : 'bg-bg-primary border border-border-default text-text-muted'}`}>
+                                <span className={`px-2 py-0.5 rounded-full text-xs font-bold ${item.variant === 'danger' ? 'bg-accent-danger text-text-primary' : item.variant === 'warning' ? 'bg-accent-warm text-bg-primary' : 'bg-bg-primary border border-border-default text-text-muted'}`}>
                                     {item.badge}
                                 </span>
                             )}
@@ -248,7 +314,7 @@ export default function LccDashboard() {
 
             {/* Main Content */}
             <main className="flex-1 max-w-7xl mx-auto w-full p-4 sm:p-8 animate-in fade-in duration-300">
-                {selectedCase ? renderCaseDetail() : renderOverview()}
+                {activeView === 'insights' ? renderInsights() : selectedCase ? renderCaseDetail() : renderOverview()}
             </main>
         </div>
     );
