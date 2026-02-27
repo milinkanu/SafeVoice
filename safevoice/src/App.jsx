@@ -15,6 +15,9 @@ import EmployeeDashboard from './pages/EmployeeDashboard';
 import Dashboard from './pages/icc/Dashboard';
 import Login from './pages/icc/Login';
 
+// LCC Pages
+import LccDashboard from './pages/lcc/Dashboard';
+
 function App() {
   return (
     <BrowserRouter>
@@ -33,6 +36,9 @@ function App() {
           {/* ICC Routes (Dashboard handles its own layout, login can use PageWrapper) */}
           <Route path="/icc/login" element={<PageWrapper><Login /></PageWrapper>} />
           <Route path="/icc" element={<Dashboard />} />
+
+          {/* LCC Routes */}
+          <Route path="/lcc" element={<PageWrapper><LccDashboard /></PageWrapper>} />
         </Routes>
       </div>
     </BrowserRouter>

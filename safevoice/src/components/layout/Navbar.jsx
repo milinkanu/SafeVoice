@@ -8,9 +8,10 @@ export function Navbar() {
     const navigate = useNavigate();
     const clearReportDraft = useReportStore(state => state.clearReportDraft);
     const isIccRoute = location.pathname.startsWith('/icc');
+    const isLccRoute = location.pathname.startsWith('/lcc');
 
-    // Do not show public navbar on ICC dashboard pages
-    if (isIccRoute && location.pathname !== '/icc/login') {
+    // Do not show public navbar on ICC/LCC dashboard pages
+    if ((isIccRoute && location.pathname !== '/icc/login') || isLccRoute) {
         return null;
     }
 

@@ -179,7 +179,11 @@ export default function Landing() {
                     </div>
 
                     <div className="flex flex-col sm:flex-row gap-6 text-center text-sm font-medium">
-                        <Link to="/icc/login" className="text-text-muted hover:text-accent-primary transition-colors">Organization Login</Link>
+                        <Link to="/icc/login" className="text-text-muted hover:text-accent-primary transition-colors">ICC Login</Link>
+                        <span className="text-text-muted hidden sm:inline">•</span>
+                        <Link to="/icc" className="text-text-muted hover:text-accent-primary transition-colors">ICC Dashboard</Link>
+                        <span className="text-text-muted hidden sm:inline">•</span>
+                        <Link to="/lcc" className="text-text-muted hover:text-accent-primary transition-colors">LCC Dashboard</Link>
                         <span className="text-text-muted hidden sm:inline">•</span>
                         <a href="https://ncw.nic.in" target="_blank" rel="noreferrer" className="text-text-muted hover:text-text-primary transition-colors">National Commission for Women</a>
                         <span className="text-text-muted hidden sm:inline">•</span>

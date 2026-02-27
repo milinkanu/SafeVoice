@@ -8,6 +8,7 @@ import errorHandler from './middleware/errorHandler.js';
 import complaintRoutes from './routes/complaints.js';
 import evidenceRoutes from './routes/evidence.js';
 import iccRoutes from './routes/icc.js';
+import lccRoutes from './routes/lcc.js';
 
 dotenv.config();
 
@@ -39,6 +40,7 @@ app.use('/api', limiter);
 app.use('/api/complaints', complaintRoutes);
 app.use('/api/evidence', evidenceRoutes);
 app.use('/api/icc', iccRoutes);
+app.use('/api/lcc', lccRoutes);
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {
