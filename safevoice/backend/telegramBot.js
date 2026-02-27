@@ -23,10 +23,13 @@ const PHASES = {
     IDLE: 'IDLE',
     SAFETY_CHECK: 'SAFETY_CHECK',
     INCIDENT_DATE: 'INCIDENT_DATE',
-    INCIDENT_LOCATION: 'INCIDENT_LOCATION',
-    INCIDENT_DESCRIPTION: 'INCIDENT_DESCRIPTION',
+    DELAY_REASON: 'DELAY_REASON',
+    LOCATION: 'LOCATION',
+    DESCRIPTION: 'DESCRIPTION',
     ACCUSED_LEVEL: 'ACCUSED_LEVEL',
+    INTERIM_RELIEF: 'INTERIM_RELIEF',
     EVIDENCE: 'EVIDENCE',
+    DISCLOSURE_NOTICE: 'DISCLOSURE_NOTICE',
     CONFIRMATION: 'CONFIRMATION'
 };
 
@@ -34,10 +37,13 @@ const getInitSession = () => ({
     phase: PHASES.IDLE,
     data: {
         date: '',
+        delayReason: '',
         location: '',
         description: '',
         accusedLevel: '',
-        evidenceAttached: 'No'
+        interimRelief: '',
+        evidenceAttached: 'No',
+        submissionType: ''
     }
 });
 
@@ -52,21 +58,22 @@ bot.onText(/\/start/, (msg) => {
     sessions.set(chatId, getInitSession());
 
     // Phase 0: Entry Safety Frame
-    const introMsg = `I’m here to help you document your experience safely and confidentially.\nYou are in control at every step.\nNothing will be submitted without your confirmation.`;
+    const introMsg = `I’m here to help you document your experience safely and in accordance with the POSH Act, 2013.\n\nYou remain in control at every step.\nNothing will be formally submitted without your confirmation.`;
 
     bot.sendMessage(chatId, introMsg).then(() => {
         // Phase 1: Emotional Grounding
         setTimeout(() => {
             const session = sessions.get(chatId);
-            session.phase = PHASES.SAFETY_CHECK;
-
-            bot.sendMessage(chatId, 'Before we begin — are you safe right now?\n(Please reply with Yes / No)', {
-                reply_markup: {
-                    keyboard: [[{ text: 'Yes' }, { text: 'No' }]],
-                    one_time_keyboard: true,
-                    resize_keyboard: true
-                }
-            });
+            if (session) {
+                session.phase = PHASES.SAFETY_CHECK;
+                bot.sendMessage(chatId, 'Before we begin — are you safe right now?\n(Please reply with Yes / No)', {
+                    reply_markup: {
+                        keyboard: [[{ text: 'Yes' }, { text: 'No' }]],
+                        one_time_keyboard: true,
+                        resize_keyboard: true
+                    }
+                });
+            }
         }, 1500);
     });
 });
@@ -88,7 +95,7 @@ bot.on('message', async (msg) => {
 
     if (text.toLowerCase() === '/resume') {
         const session = sessions.get(chatId);
-        if (!session) {
+        if (!session || session.phase === PHASES.IDLE) {
             bot.sendMessage(chatId, 'No active session found. Type /start to begin.');
         } else {
             bot.sendMessage(chatId, 'Welcome back. Let\'s continue from where you left off. Please reply to the last question asked.');
@@ -109,14 +116,12 @@ bot.on('message', async (msg) => {
         switch (session.phase) {
             case PHASES.SAFETY_CHECK:
                 if (text.toLowerCase() === 'no') {
-                    bot.sendMessage(chatId, 'If you are in immediate danger, please contact local emergency services.\nI can continue once you are safe.', {
+                    bot.sendMessage(chatId, 'If you are in immediate danger, please contact local emergency services or dial 112.\nI will remain here whenever you are ready to continue.', {
                         reply_markup: { remove_keyboard: true }
                     });
-                    // keep phase same, so they can reply 'Yes' later
                 } else {
-                    // Start Guided Incident Logging
                     session.phase = PHASES.INCIDENT_DATE;
-                    bot.sendMessage(chatId, 'Whenever you’re ready, you can describe what happened in your own words. There’s no need to rush.\n\nFirst, when did the incident occur?\nYou may enter an approximate date.', {
+                    bot.sendMessage(chatId, 'Under the POSH Act, a complaint should ideally be filed within 3 months of the incident.\n\nWhen did the incident occur?\n(An approximate date is acceptable.)', {
                         reply_markup: { remove_keyboard: true }
                     });
                 }
@@ -124,23 +129,42 @@ bot.on('message', async (msg) => {
 
             case PHASES.INCIDENT_DATE:
                 session.data.date = text;
-                session.phase = PHASES.INCIDENT_LOCATION;
-                bot.sendMessage(chatId, 'Where did this happen? (Department or location)');
+                session.phase = PHASES.DELAY_REASON;
+
+                bot.sendMessage(chatId, "If this incident occurred more than 3 months ago, the law allows an extension of up to 3 additional months if sufficient reason is provided.\n\nWould you like to briefly explain the delay?\n(Reply with your reason, or type 'Skip' if it happened recently)", {
+                    reply_markup: {
+                        keyboard: [[{ text: 'Skip' }]],
+                        one_time_keyboard: true,
+                        resize_keyboard: true
+                    }
+                });
                 break;
 
-            case PHASES.INCIDENT_LOCATION:
+            case PHASES.DELAY_REASON:
+                if (text.toLowerCase() !== 'skip' && text.toLowerCase() !== 'no') {
+                    session.data.delayReason = text;
+                }
+                session.phase = PHASES.LOCATION;
+                bot.sendMessage(chatId, 'Where did this occur?\n(Department, office location, or work-related setting)', {
+                    reply_markup: { remove_keyboard: true }
+                });
+                break;
+
+            case PHASES.LOCATION:
                 session.data.location = text;
-                session.phase = PHASES.INCIDENT_DESCRIPTION;
-                bot.sendMessage(chatId, 'Please describe what happened in your own words.\nTake your time.');
+                session.phase = PHASES.DESCRIPTION;
+                bot.sendMessage(chatId, 'Please describe what happened in your own words.\nShare only what you are comfortable documenting.\n\nThis statement may later form part of a formal written complaint under the POSH Act.', {
+                    reply_markup: { remove_keyboard: true }
+                });
                 break;
 
-            case PHASES.INCIDENT_DESCRIPTION:
+            case PHASES.DESCRIPTION:
                 session.data.description = text;
                 session.phase = PHASES.ACCUSED_LEVEL;
 
-                await bot.sendMessage(chatId, 'Thank you for sharing that. I know documenting this can be difficult.');
+                await bot.sendMessage(chatId, 'Thank you for sharing that.\nBased on what you\'ve described, this may fall under workplace sexual harassment guidelines defined under the POSH Act, 2013.\n\nI will now guide you through the formal details required for an Internal or Local Complaints Committee inquiry.');
 
-                bot.sendMessage(chatId, 'Based on what you’ve shared, this may fall under workplace harassment guidelines. I’ll guide you through the next steps.\n\nWhat is the designation level of the person involved?\n(Senior / Same level / Junior / External)', {
+                bot.sendMessage(chatId, 'What is the designation level of the person involved?\n(Senior / Same level / Junior / External)\n\nIf known, you may also share the name or department. This helps in proper identification during inquiry.', {
                     reply_markup: {
                         keyboard: [[{ text: 'Senior' }, { text: 'Same level' }], [{ text: 'Junior' }, { text: 'External' }]],
                         one_time_keyboard: true,
@@ -151,9 +175,27 @@ bot.on('message', async (msg) => {
 
             case PHASES.ACCUSED_LEVEL:
                 session.data.accusedLevel = text;
+                session.phase = PHASES.INTERIM_RELIEF;
+
+                bot.sendMessage(chatId, 'Under the POSH Act, you may request interim relief during inquiry, such as:\n• Transfer\n• Change in reporting structure\n• Leave up to 3 months\n\nWould you like to request any interim protection?\n(Yes / No / Decide Later)', {
+                    reply_markup: {
+                        keyboard: [[{ text: 'Yes' }, { text: 'No' }, { text: 'Decide Later' }]],
+                        one_time_keyboard: true,
+                        resize_keyboard: true
+                    }
+                });
+                break;
+
+            case PHASES.INTERIM_RELIEF:
+                session.data.interimRelief = text;
                 session.phase = PHASES.EVIDENCE;
-                bot.sendMessage(chatId, 'If you have any screenshots, emails, or audio that you feel comfortable sharing, you may upload them. This is optional.\n\n(Upload files now, or type "Skip" to proceed)', {
-                    reply_markup: { remove_keyboard: true }
+
+                bot.sendMessage(chatId, 'If you have supporting material such as messages, emails, audio, or witness details, you may upload them now.\n\nFiles are encrypted and digitally hashed for integrity validation.\n\n(Upload files now, or type "Skip" to proceed)', {
+                    reply_markup: {
+                        keyboard: [[{ text: 'Skip' }]],
+                        one_time_keyboard: true,
+                        resize_keyboard: true
+                    }
                 });
                 break;
 
@@ -166,16 +208,42 @@ bot.on('message', async (msg) => {
                     session.data.evidenceAttached = 'No (No file detected)';
                 }
 
-                session.phase = PHASES.CONFIRMATION;
-                const summaryMsg = `Here is a summary of your report:\n` +
-                    `Date: ${session.data.date}\n` +
-                    `Department/Location: ${session.data.location}\n` +
-                    `Description: ${session.data.description}\n` +
-                    `Accused Level: ${session.data.accusedLevel}\n` +
-                    `Evidence attached: ${session.data.evidenceAttached}\n\n` +
-                    `Do you confirm submission?\n(Confirm / Edit / Cancel)`;
+                session.phase = PHASES.DISCLOSURE_NOTICE;
 
-                bot.sendMessage(chatId, summaryMsg, {
+                const noticeMsg = `For a formal ICC/LCC inquiry under the POSH Act, your identity must be disclosed to the committee.\n\nYour identity will remain confidential and cannot be shared publicly.\n\nAt this stage, would you like to:\n1️⃣ Keep this as a confidential documented record\n2️⃣ Proceed with formal POSH complaint submission`;
+
+                bot.sendMessage(chatId, noticeMsg, {
+                    reply_markup: {
+                        keyboard: [
+                            [{ text: '1️⃣ Confidential Record' }],
+                            [{ text: '2️⃣ Formal POSH Submission' }]
+                        ],
+                        one_time_keyboard: true,
+                        resize_keyboard: true
+                    }
+                });
+                break;
+
+            case PHASES.DISCLOSURE_NOTICE:
+                session.data.submissionType = text.includes('1') ? 'Confidential Record' : 'Formal POSH Submission';
+                session.phase = PHASES.CONFIRMATION;
+
+                let summaryBody = `Here is a summary of your report:\n` +
+                    `Type: ${session.data.submissionType}\n` +
+                    `Date: ${session.data.date}\n` +
+                    `Location: ${session.data.location}\n` +
+                    `Details Captured: Yes\n` +
+                    `Accused Level: ${session.data.accusedLevel}\n` +
+                    `Interim Relief: ${session.data.interimRelief}\n` +
+                    `Evidence attached: ${session.data.evidenceAttached}\n\n`;
+
+                if (session.data.submissionType === 'Formal POSH Submission') {
+                    summaryBody += `Please confirm that the above statement is true to the best of your knowledge and that you request a formal inquiry under the POSH Act, 2013.\n\n(Confirm / Edit / Cancel)`;
+                } else {
+                    summaryBody += `Do you confirm saving this as a confidential record?\n\n(Confirm / Edit / Cancel)`;
+                }
+
+                bot.sendMessage(chatId, summaryBody, {
                     reply_markup: {
                         keyboard: [[{ text: 'Confirm' }, { text: 'Edit' }, { text: 'Cancel' }]],
                         one_time_keyboard: true,
@@ -201,8 +269,11 @@ bot.on('message', async (msg) => {
                         const caseId = generateCaseId();
                         const incidentDetails = {
                             date: session.data.date,
+                            delayReason: session.data.delayReason || null,
                             location: session.data.location,
                             description: session.data.description,
+                            submissionType: session.data.submissionType,
+                            interimRelief: session.data.interimRelief,
                             source: 'Telegram_Bot'
                         };
                         const accusedDetails = {
@@ -225,7 +296,9 @@ bot.on('message', async (msg) => {
                             contactPhone
                         ]);
 
-                        bot.sendMessage(chatId, `Your report has been securely submitted to the ICC.\n\nYour secure Case ID is: *${caseId}*\n\nPlease keep this safe. You can use this ID to check the status of your case on our platform.`, {
+                        const finalMsg = `Your complaint has been securely registered.\n\nCase ID: *${caseId}*\n\nThe Internal/Local Complaints Committee will be notified in accordance with statutory timelines:\n\n• 7 days — Notice to respondent\n• 90 days — Inquiry completion\n• 10 days — Report submission\n\nYou may track updates using your secure Case ID.`;
+
+                        bot.sendMessage(chatId, finalMsg, {
                             parse_mode: 'Markdown',
                             reply_markup: { remove_keyboard: true }
                         });
@@ -254,6 +327,6 @@ bot.on('message', async (msg) => {
     }
 });
 
-console.log('🤖 SafeVoice Telegram Bot initialized successfully');
+console.log('🤖 SafeVoice Legal Companion (Telegram Bot) initialized successfully');
 
 export default bot;

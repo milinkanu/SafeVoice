@@ -26,7 +26,13 @@ export function ReportWizard() {
     const steps = ["Incident", "Details", "Evidence", "Contact"];
 
     const handleNext = () => setCurrentStep(prev => prev + 1);
-    const handleBack = () => setCurrentStep(prev => prev - 1);
+    const handleBack = () => {
+        if (currentStep === 0) {
+            navigate(-1);
+        } else {
+            setCurrentStep(prev => prev - 1);
+        }
+    };
 
     const handleSubmit = async () => {
         setIsSubmitting(true);
@@ -122,8 +128,7 @@ export function ReportWizard() {
                     <Button
                         variant="ghost"
                         onClick={handleBack}
-                        disabled={currentStep === 0 || isSubmitting}
-                        className={`opacity-100 ${currentStep === 0 ? 'opacity-0 pointer-events-none' : ''}`}
+                        disabled={isSubmitting}
                     >
                         <ArrowLeft className="w-4 h-4 mr-2" />
                         Back

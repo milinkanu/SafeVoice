@@ -63,6 +63,8 @@ export function CompassWizard() {
         } else if (currentIndex > 0) {
             setDirection(-1);
             setCurrentIndex(prev => prev - 1);
+        } else {
+            navigate(-1);
         }
     };
 
@@ -86,8 +88,8 @@ export function CompassWizard() {
         <div className="max-w-3xl mx-auto w-full">
             {/* Progress Header */}
             <div className="mb-8">
-                <button onClick={handleBack} disabled={currentIndex === 0}
-                    className={`flex items-center gap-2 text-sm font-medium transition-colors mb-6 ${currentIndex === 0 ? 'text-text-muted/50 cursor-not-allowed' : 'text-text-muted hover:text-text-primary'}`}>
+                <button onClick={handleBack}
+                    className="flex items-center gap-2 text-sm font-medium transition-colors mb-6 text-text-muted hover:text-text-primary">
                     <ArrowLeft className="w-4 h-4" /> Back
                 </button>
                 <div className="flex justify-between items-end mb-3">
