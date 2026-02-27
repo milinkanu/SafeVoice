@@ -11,6 +11,9 @@ import iccRoutes from './routes/icc.js';
 
 dotenv.config();
 
+// Initialize Telegram Bot
+import './telegramBot.js';
+
 const app = express();
 const PORT = process.env.PORT || 5000;
 
