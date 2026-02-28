@@ -209,7 +209,7 @@ function OutcomeScreen({ outcome, onBack, navigate }) {
                 {/* Glow Background */}
                 <div className={`absolute top-0 left-1/2 -translate-x-1/2 w-[200px] h-[100px] bg-${h.color}/20 blur-[100px] rounded-full pointer-events-none`} />
 
-                <div className={`w-24 h-24 mx-auto rounded-3xl flex items-center justify-center mb-6 shadow-xl border border-white/10 bg-bg-surface text-${h.color}`}>
+                <div className={`w-24 h-24 mx-auto rounded-3xl flex items-center justify-center mb-6 shadow-xl border border-border-glass bg-bg-surface text-${h.color}`}>
                     {h.icon}
                 </div>
 

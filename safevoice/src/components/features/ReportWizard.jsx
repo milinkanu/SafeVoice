@@ -94,7 +94,7 @@ export function ReportWizard() {
     return (
         <div className="bg-bg-secondary border border-border-default rounded-2xl shadow-xl overflow-hidden min-h-[500px] flex flex-col">
             {/* Tracker */}
-            <div className="bg-bg-surface px-6 py-4 border-b border-white/5">
+            <div className="bg-bg-surface px-6 py-4 border-b border-border-glass">
                 <ProgressBar steps={steps} currentStep={currentStep} />
             </div>
 
@@ -180,7 +180,7 @@ function SectionIncident({ data, update }) {
             </div>
 
             {compassResult?.poshType?.length > 0 && (
-                <div className="bg-bg-surface p-4 rounded-xl border border-white/5 mb-4">
+                <div className="bg-bg-surface p-4 rounded-xl border border-border-glass mb-4">
                     <p className="text-xs text-text-muted uppercase tracking-wider font-bold mb-2">Automated POSH Classifications Applied:</p>
                     <div className="flex flex-wrap gap-2">
                         {compassResult.poshType.map(t => (
@@ -245,7 +245,7 @@ function SectionIncident({ data, update }) {
                 </div>
             )}
 
-            <div className="p-4 bg-bg-surface border border-white/5 rounded-xl flex items-start gap-3">
+            <div className="p-4 bg-bg-surface border border-border-glass rounded-xl flex items-start gap-3">
                 <Lock className="w-5 h-5 text-accent-primary shrink-0 mt-0.5" />
                 <p className="text-sm text-text-muted">
                     <strong className="text-text-primary">End-to-End Encrypted.</strong> We use AES-GCM 256-bit encryption. Neither SafeVoice developers nor unauthorized ICC members can read this description.
@@ -314,7 +314,7 @@ function SectionEvidence({ update }) {
 
             <FileUpload onUploadChange={update} />
 
-            <div className="p-4 bg-bg-surface/50 border border-white/5 rounded-xl shadow-inner">
+            <div className="p-4 bg-bg-surface/50 border border-border-glass rounded-xl shadow-inner">
                 <h4 className="font-semibold text-text-primary text-sm flex items-center gap-2 mb-2">
                     <FileUp className="w-4 h-4 text-text-muted" /> How we protect evidence
                 </h4>

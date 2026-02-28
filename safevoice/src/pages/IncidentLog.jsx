@@ -82,7 +82,7 @@ export default function IncidentLog() {
     return (
         <div className="max-w-4xl mx-auto w-full px-4 pt-10 pb-20">
             <div className="text-center mb-10">
-                <div className="inline-flex items-center justify-center w-16 h-16 rounded-3xl bg-bg-surface border border-white/10 shadow-lg text-accent-primary mb-6">
+                <div className="inline-flex items-center justify-center w-16 h-16 rounded-3xl bg-bg-surface border border-border-glass shadow-lg text-accent-primary mb-6">
                     <ShieldAlert className="w-8 h-8" />
                 </div>
                 <h1 className="text-4xl font-display text-text-primary mb-4">Private Incident Log</h1>

@@ -10,6 +10,8 @@ export default {
         'bg-primary': 'var(--bg-primary)',
         'bg-secondary': 'var(--bg-secondary)',
         'bg-surface': 'var(--bg-surface)',
+        'bg-glass': 'var(--bg-glass)',
+        'border-glass': 'var(--border-glass)',
         'accent-primary': 'var(--accent-primary)',
         'accent-warm': 'var(--accent-warm)',
         'accent-danger': 'var(--accent-danger)',

@@ -1,5 +1,7 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { PageWrapper } from './components/layout/PageWrapper';
+import { useThemeStore } from './store/themeStore';
+import { useEffect } from 'react';
 
 // Public Pages
 import Landing from './pages/Landing';
@@ -19,6 +21,16 @@ import Login from './pages/icc/Login';
 import LccDashboard from './pages/lcc/Dashboard';
 
 function App() {
+  const theme = useThemeStore(state => state.theme);
+
+  useEffect(() => {
+    if (theme === 'light') {
+      document.documentElement.classList.add('light');
+    } else {
+      document.documentElement.classList.remove('light');
+    }
+  }, [theme]);
+
   return (
     <BrowserRouter>
       <div className="min-h-screen bg-bg-primary text-text-primary">

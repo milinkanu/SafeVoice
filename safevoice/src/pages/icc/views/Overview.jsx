@@ -73,7 +73,7 @@ export default function Overview({ onSelectCase }) {
                                 return (
                                     <tr key={c.id} className="hover:bg-bg-surface/30 group">
                                         <td className="py-4">
-                                            <span className="font-mono text-text-primary bg-bg-primary/50 px-2 py-1 rounded border border-white/5">{c.id}</span>
+                                            <span className="font-mono text-text-primary bg-bg-primary/50 px-2 py-1 rounded border border-border-glass">{c.id}</span>
                                             {isOverdue && <span className="ml-2 px-2 py-0.5 bg-accent-danger/20 text-accent-danger rounded text-xs font-bold">OVERDUE</span>}
                                         </td>
                                         <td className="py-4 font-medium text-text-primary">{c.stage.replace(/_/g, ' ')}</td>

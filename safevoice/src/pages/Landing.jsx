@@ -47,7 +47,7 @@ export default function Landing() {
                         stiffness: 260,
                         damping: 20
                     }}
-                    className="relative inline-flex items-center justify-center w-28 h-28 sm:w-36 sm:h-36 rounded-[2rem] bg-gradient-to-br from-bg-surface to-bg-primary shadow-2xl border border-white/10 mb-8"
+                    className="relative inline-flex items-center justify-center w-28 h-28 sm:w-36 sm:h-36 rounded-[2rem] bg-gradient-to-br from-bg-surface to-bg-primary shadow-2xl border border-border-glass mb-8"
                 >
                     <div className="absolute inset-0 bg-accent-primary opacity-20 blur-2xl rounded-full animate-pulse pointer-events-none"></div>
                     <Shield className="w-16 h-16 sm:w-20 sm:h-20 text-accent-primary" />
@@ -118,7 +118,7 @@ export default function Landing() {
             {/* 3. Why SafeVoice */}
             <section className="w-full max-w-6xl mx-auto px-4 mb-32">
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <div className="md:col-span-1 p-8 rounded-3xl bg-bg-surface border border-white/5 shadow-2xl">
+                    <div className="md:col-span-1 p-8 rounded-3xl bg-bg-surface border border-border-glass shadow-2xl">
                         <h3 className="text-2xl font-display text-text-primary mb-4">Truly Anonymous</h3>
                         <p className="text-text-muted mb-6">Built like a cryptocurrency wallet. You own your data. We have zero knowledge of who you are.</p>
                         <ul className="space-y-3">
@@ -133,7 +133,7 @@ export default function Landing() {
                         <p className="text-text-primary/80">Structured exclusively around the 2013 Indian Act. We ensure your report gives HR everything they legally need to initiate an inquiry.</p>
                     </div>
 
-                    <div className="md:col-span-1 p-8 rounded-3xl bg-bg-surface border border-white/5 shadow-2xl flex flex-col justify-center">
+                    <div className="md:col-span-1 p-8 rounded-3xl bg-bg-surface border border-border-glass shadow-2xl flex flex-col justify-center">
                         <h3 className="text-2xl font-display text-text-primary mb-4">Auto-Escalation</h3>
                         <p className="text-text-muted">If the ICC stalls or misses their 7-day or 90-day legally mandated windows, SafeVoice generates pre-filled legal documents for your protection.</p>
                     </div>

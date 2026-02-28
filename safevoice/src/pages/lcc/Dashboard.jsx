@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Shield, Activity, FileText, CheckCircle2, AlertOctagon, LogOut, MessageSquare, Calendar, MapPin, User, ChevronRight, Sparkles, AlertTriangle } from 'lucide-react';
+import { ThemeToggle } from '../../components/ui/ThemeToggle';
 
 export default function LccDashboard() {
     const navigate = useNavigate();
@@ -257,7 +258,7 @@ export default function LccDashboard() {
                                         {insight.severity} SEVERITY
                                     </span>
                                 </div>
-                                <p className="text-text-muted mb-6 leading-relaxed bg-bg-primary/50 p-4 rounded-lg border border-white/5">
+                                <p className="text-text-muted mb-6 leading-relaxed bg-bg-primary/50 p-4 rounded-lg border border-border-glass">
                                     {insight.description}
                                 </p>
                                 <div>
@@ -305,7 +306,11 @@ export default function LccDashboard() {
                     ))}
                 </nav>
 
-                <div className="p-4 border-t border-border-default">
+                <div className="p-4 border-t border-border-default space-y-2">
+                    <div className="flex items-center justify-between px-2 w-full mb-2">
+                        <span className="text-xs text-text-muted font-medium uppercase">Theme</span>
+                        <ThemeToggle />
+                    </div>
                     <button onClick={handleLogout} className="flex items-center gap-3 text-sm font-medium text-text-muted hover:text-accent-danger transition-colors w-full p-2 rounded-lg hover:bg-bg-surface">
                         <LogOut className="w-4 h-4" /> Sign Out
                     </button>
@@ -313,7 +318,10 @@ export default function LccDashboard() {
             </aside>
 
             {/* Main Content */}
-            <main className="flex-1 max-w-7xl mx-auto w-full p-4 sm:p-8 animate-in fade-in duration-300">
+            <main className="flex-1 max-w-7xl mx-auto w-full p-4 sm:p-8 animate-in fade-in duration-300 relative">
+                <div className="absolute top-4 right-4 sm:top-8 sm:right-8 md:hidden z-10">
+                    <ThemeToggle />
+                </div>
                 {activeView === 'insights' ? renderInsights() : selectedCase ? renderCaseDetail() : renderOverview()}
             </main>
         </div>

@@ -9,15 +9,31 @@
     --bg-primary: #0D1117;
     --bg-secondary: #161B22;
     --bg-surface: #1F2937;
+    --bg-glass: rgba(255, 255, 255, 0.05); /* replace white/5 */
+    --border-glass: rgba(255, 255, 255, 0.1); /* replace white/10 */
     --accent-primary: #10B981;
     --accent-warm: #F59E0B;
     --accent-danger: #EF4444;
     --text-primary: #F9FAFB;
-    --text-muted: #6B7280;
+    --text-muted: #9CA3AF;
     --border-default: #374151;
   }
 
+  .light {
+    --bg-primary: #F3F4F6;
+    --bg-secondary: #FFFFFF;
+    --bg-surface: #E5E7EB;
+    --bg-glass: rgba(0, 0, 0, 0.04); /* replace white/5 equivalent for light mode */
+    --border-glass: rgba(0, 0, 0, 0.08); /* replace white/10 equivalent for light mode */
+    --accent-primary: #059669; /* Slightly darker green */
+    --accent-warm: #D97706;
+    --accent-danger: #DC2626;
+    --text-primary: #111827;
+    --text-muted: #4B5563;
+    --border-default: #D1D5DB;
+  }
+
   body {
-    @apply bg-[var(--bg-primary)] text-[var(--text-primary)] font-sans antialiased;
+    @apply bg-[var(--bg-primary)] text-[var(--text-primary)] font-sans antialiased transition-colors duration-300;
   }
 }

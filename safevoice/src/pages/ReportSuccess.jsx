@@ -93,7 +93,7 @@ export default function ReportSuccess() {
 
                     {/* Passphrase Area */}
                     <div className="bg-bg-surface border border-accent-warm/30 rounded-xl shadow-inner overflow-hidden flex flex-col">
-                        <div className="px-5 py-3 bg-accent-warm/5 flex justify-between items-center border-b border-white/5">
+                        <div className="px-5 py-3 bg-accent-warm/5 flex justify-between items-center border-b border-border-glass">
                             <p className="text-xs text-accent-warm font-bold uppercase tracking-wider flex items-center gap-2">
                                 <AlertTriangle className="w-3.5 h-3.5" />
                                 Secret Passphrase
@@ -111,7 +111,7 @@ export default function ReportSuccess() {
                             {passphraseVisible ? (
                                 <p className="font-mono text-lg text-text-primary tracking-wide text-center leading-relaxed">
                                     {passphrase.split(' ').map((word, i) => (
-                                        <span key={i} className="inline-block bg-bg-primary/50 px-2 py-0.5 m-1 rounded border border-white/10 select-all">
+                                        <span key={i} className="inline-block bg-bg-primary/50 px-2 py-0.5 m-1 rounded border border-border-glass select-all">
                                             {word}
                                         </span>
                                     ))}

@@ -219,7 +219,7 @@ Under Section 11 of the POSH Act, 2013, jurisdiction is hereby requested to be t
                                 ))}
                             </div>
                         ) : (
-                            <div className="text-center p-8 bg-bg-primary/50 border border-white/5 rounded-xl border-dashed">
+                            <div className="text-center p-8 bg-bg-primary/50 border border-border-glass rounded-xl border-dashed">
                                 <p className="text-text-muted italic">No messages sent or received yet.</p>
                             </div>
                         )}

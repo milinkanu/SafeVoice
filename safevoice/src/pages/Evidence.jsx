@@ -98,7 +98,7 @@ export default function Evidence() {
                                     </div>
                                 </div>
 
-                                <div className="bg-bg-primary/50 text-xs px-3 py-1.5 rounded border border-white/5 mb-3">
+                                <div className="bg-bg-primary/50 text-xs px-3 py-1.5 rounded border border-border-glass mb-3">
                                     <p className="font-mono text-text-muted break-all flex items-center gap-2">
                                         <CheckCircle2 className="w-3.5 h-3.5 text-accent-primary shrink-0" />
                                         {f.hash}
