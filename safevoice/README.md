@@ -1,64 +1,143 @@
-# SafeVoice — Anonymous POSH Reporting Platform
+<div align="center">
+  <img src="https://via.placeholder.com/150/111827/FFFFFF?text=SafeVoice" alt="SafeVoice Logo" width="100"/>
+  <h1>SafeVoice</h1>
+  <p><strong>The Zero-Knowledge, Mathematically Secure POSH Reporting Platform</strong></p>
 
-SafeVoice is a mathematically secure, zero-knowledge reporting platform designed to help employees file workplace harassment complaints strictly under the Prevention of Sexual Harassment (POSH) Act, 2013. 
+  [![React](https://img.shields.io/badge/Frontend-React%2018-blue?style=flat-square)](https://react.dev/)
+  [![Vite](https://img.shields.io/badge/Bundler-Vite-purple?style=flat-square)](https://vitejs.dev/)
+  [![Node.js](https://img.shields.io/badge/Backend-Node.js-green?style=flat-square)](https://nodejs.org/)
+  [![PostgreSQL](https://img.shields.io/badge/Database-PostgreSQL-336791?style=flat-square)](https://www.postgresql.org/)
+  [![License](https://img.shields.io/badge/License-MIT-gray?style=flat-square)](#)
+</div>
 
-It uses client-side cryptography to let victims maintain 100% anonymity while still being perfectly trackable, allowing them to monitor the mandatory ICC (Internal Complaints Committee) legal deadlines (Day 7, 30, 90).
+<br/>
 
-## 🚀 Getting Started (Phase 1 MVP)
+SafeVoice is a deeply secure, zero-knowledge reporting platform specifically engineered to help employees file workplace harassment complaints under the **Prevention of Sexual Harassment (POSH) Act, 2013**. 
 
-This repository contains both a React frontend and an Express backend. For Phase 1 demo purposes, the frontend is actively mocking database connections using your browser's `localStorage`, meaning you do not need to boot up a PostgreSQL database to test the end-to-end flow!
+By utilizing client-side web cryptography, SafeVoice guarantees **100% victim anonymity** without sacrificing strict legal traceability. It automates compliance with the legally mandated ICC (Internal Complaints Committee) deadlines, ensuring zero cases are swept under the rug. 
 
-### 1. Start the Frontend
-1. Open a terminal and navigate to the main frontend directory:
-   ```bash
-   cd safevoice
-   ```
-2. Install the frontend dependencies (if not already done):
-   ```bash
-   npm install
-   ```
-3. Start the Vite development server:
-   ```bash
-   npm run dev
-   ```
-4. Open your browser and go to: [http://localhost:5173](http://localhost:5173)
-
-### 2. Start the Backend API (Optional for Phase 1 Demo)
-1. Open a **new terminal** and navigate to the backend directory:
-   ```bash
-   cd safevoice/backend
-   ```
-2. Install dependencies:
-   ```bash
-   npm install
-   ```
-3. Start the Node.js server:
-   ```bash
-   npm run dev
-   ```
-   *The API will be running on `http://localhost:5000`*
+Pushing beyond the corporate boundary, SafeVoice is uniquely built for **both the organized and unorganized sectors**, empowering any woman to register a formal complaint comfortably and safely from her home using a dedicated **multilingual chatbot**.
 
 ---
 
-## 🧪 Testing the 4-Minute Hackathon Demo
+## ✨ Core Features & Capabilities
 
-To experience the full capability of the zero-knowledge engine, follow these steps:
+### 🔒 1. Absolute Zero-Knowledge Anonymity
+- **No Logins for Victims:** No email, no phone number, no trace. 
+- **12-Word Passphrase:** Case access is protected by a BIP39 generated, client-side, 12-word secret passphrase. Only the victim holds the key.
+- **Client-Side Encryption:** Case details and evidence are hashed/encrypted *inside the browser* before ever reaching the server.
 
-1. **Assess (`/compass`)**: Click *Check Your Eligibility* on the Landing page and answer the 8-question wizard.
-2. **Report (`/report`)**: Fill out the anonymous complaint. When you submit, your browser generates a local cryptographic keypair and encrypts the context.
-3. **Lock & Save (`/report/success`)**: You will be presented with your structural **Case ID** and a **12-word Secret Passphrase**. Save this carefully! (You can click download to generate the official Warning PDF).
-4. **Track (`/track`)**: You will be redirected to the tracking system. Paste your 12-word passphrase. It will securely authenticate you and pull up your Case Timeline.
-5. **ICC Command Center (`/icc/login`)**: Open a new browser tab and navigate to `http://localhost:5173/icc/login`. Use any email/password to login.
-6. **ICC Dashboard (`/icc`)**: View the active complaint queue. Find your freshly submitted complaint, click **View**, and actively click **Mark as Acknowledged**!
-7. **Switch back to your `Track` tab** — the complainant timeline will now show the ICC's official acknowledgment!
+### ⏱️ 2. Strict POSH Timeline Enforcement
+The platform maps cases functionally according to the strict deadlines set by the POSH Act:
+- **Day 7:** Mandatory initial acknowledgment.
+- **Day 30:** Mandatory inquiry commencement.
+- **Day 90:** Legal deadline for resolution. Cases exceeding 90 days trigger visual distress and potential LCC escalation.
+
+### 🏢 3. Multi-Tier Governance Dashboards
+- **Employee Portal:** File complaints, access the evidence vault, and track case statuses using the 12-word mnemonic.
+- **ICC Dashboard:** The dedicated command center for the Internal Complaints Committee to accept cases, update statuses, view evidence safely, and complete their legal reports.
+- **LCC Dashboard:** High-level dashboard for the Local Complaints Committee specifically tailored to monitor cases that the ICC failed to resolve within 90 days.
+
+### 📄 4. Automated Legal Documentation (jsPDF)
+- **Warning PDFs:** Auto-generates local case filings.
+- **Evidence Certificates:** Generates tamper-proof cryptographic proofs of uploaded files. 
+- **LCC Escalation Forms:** Auto-generates legal referral forms when ICC defaults.
+
+### 🌍 5. Unorganized Sector & Multilingual Chatbot Support
+- **Beyond Corporate Walls:** Specifically designed to be accessible for women working in the unorganized sector (domestic workers, daily wage laborers, freelancers, etc.) who lack a dedicated corporate HR setup.
+- **Home-Safe Registration:** A built-in, intuitive **multilingual chatbot** allows victims to bypass complex forms, navigate legalities conversationally in their native regional language, and safely register complaints directly from their mobile phones without leaving their homes.
+
+### 🤖 6. Real-time Telegram Notifications
+- Implements a Node Telegram Bot to instantly ping the ICC members the second a new anonymous report is filed, accelerating response times.
 
 ---
 
-## 🔐 Technologies Used
-* **Frontend:** React, Vite, Tailwind CSS, Zustand, Framer Motion
-* **Cryptography:** Web Crypto API, BIP39 (12-word mnemonic generation), SHA-256 (Client-side localized file hashing)
-* **Utilities:** jsPDF (Client-side certificate & legal document generation), React Dropzone
-* **Backend:** Node.js, Express, Postgres (Set up for Phase 2 integration)
+## 🏗️ Technical Architecture & Stack
+
+### Frontend (User & Dashboards)
+* **Framework:** React 18 / Vite
+* **Routing:** React Router v7
+* **Styling:** Tailwind CSS + Framer Motion (for buttery smooth micro-interactions)
+* **State Management:** Zustand
+* **Cryptography:** Web Crypto API, `bip39`, `crypto-browserify`
+* **Utilities:** `jspdf` (PDF generation), `lucide-react` (iconography), `react-dropzone`
+
+### Backend (API Engine)
+* **Runtime/Server:** Node.js v20+ with Express.js
+* **Database:** PostgreSQL (via Supabase)
+* **Security:** Helmet, Express-Rate-Limit, CORS, JWT
+* **Integrations:** `node-telegram-bot-api` for async team alerts
+* **Upload Management:** `multer`
 
 ---
-*Note: Because this prototype binds cases to your browser's `localStorage`, you must use the same browser (e.g., normal vs. incognito mode) to see the reports map from the public frontend over to the ICC Dashboard.*
+
+## 🚦 End-to-End Walkthrough
+
+1. **Assess (`/compass`):** Employee answers an 8-question wizard to check if their grievance legitimately falls under the POSH Act.
+2. **Report (`/report`):** Victim formulates the complaint. Browser locks it encryptographically.
+3. **Lock & Save:** The app dispenses the structural **Case ID** and a **12-word Secret Passphrase**. The victim downloads these securely.
+4. **Track (`/track`):** Victim enters the passphrase to instantly retrieve their timeline and check ICC progress.
+5. **ICC Review (`/icc`):** The internal committee accesses the encrypted queue, accepts the case, and interacts via immutable milestones.
+6. **LCC Escalation (`/lcc`):** If a case lingers >90 days, it automatically ports to the LCC overview for higher judicial intervention.
+
+---
+
+## 🚀 Installation & Local Environment Setup
+
+### Prerequisites
+- Node.js (v18 or higher)
+- PostgreSQL Database (Or a Supabase instance)
+- A Telegram Bot Token from BotFather *(optional for testing)*
+
+### 1. Clone & Set Up Backend
+```bash
+git clone https://github.com/your-username/safevoice.git
+cd safevoice/backend
+npm install
+```
+
+Create a `.env` file in the `backend/` directory:
+```env
+PORT=5000
+CLIENT_URL=http://localhost:5173
+DATABASE_URL=postgresql://your_db_connection_string
+JWT_SECRET=your_super_secret_jwt_key
+TELEGRAM_BOT_TOKEN=your_telegram_bot_token
+```
+
+Start the Backend Server:
+```bash
+npm run dev
+```
+
+### 2. Set Up Frontend
+Open a new terminal session.
+```bash
+cd safevoice
+npm install
+```
+
+*(Optional)* If you have frontend environment variables, create `.env` in the root (matching `src/` directory).
+
+Start the Frontend Server:
+```bash
+npm run dev
+```
+
+### 3. Usage
+- Go to `http://localhost:5173` to view the public application.
+- Use `http://localhost:5173/icc/login` to access the Internal Committee panel.
+
+---
+
+## 🤝 Contributing
+Contributions are absolutely welcome. This project is dedicated to making modern corporate environments safer. If you have improvements for cryptography, UI flows, or testing, please:
+1. Fork the Project
+2. Create your Feature Branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your Changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to the Branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
+
+---
+
+*Because everyone deserves a safe workplace, without fear of retaliation.*
