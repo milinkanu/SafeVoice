@@ -12,11 +12,11 @@
 
 <br/>
 
-SafeVoice is a deeply secure, zero-knowledge reporting platform specifically engineered to help employees file workplace harassment complaints under the **Prevention of Sexual Harassment (POSH) Act, 2013**. 
+**SafeVoice** is a mathematically secure, zero-knowledge grievance reporting platform engineered to revolutionize workplace safety under the **Prevention of Sexual Harassment (POSH) Act, 2013**. 
 
-By utilizing client-side web cryptography, SafeVoice guarantees **100% victim anonymity** without sacrificing strict legal traceability. It automates compliance with the legally mandated ICC (Internal Complaints Committee) deadlines, ensuring zero cases are swept under the rug. 
+Unlike traditional platforms, SafeVoice bridges the gap between the **organized corporate sector** and the vast **unorganized sector** (domestic workers, daily wage laborers, freelancers). By utilizing advanced client-side web cryptography, it guarantees **100% absolute victim anonymity** while maintaining rigorous legal traceability. 
 
-Pushing beyond the corporate boundary, SafeVoice is uniquely built for **both the organized and unorganized sectors**, empowering any woman to register a formal complaint comfortably and safely from her home using a dedicated **multilingual chatbot**.
+It completely automates compliance with legally mandated ICC/LCC deadlines to ensure zero cases are ignored. Furthermore, it empowers women without corporate HR setups to register formal, legally binding complaints safely from their homes using an intuitive, **multilingual AI chatbot**, removing language and technological barriers completely.
 
 ---
 
